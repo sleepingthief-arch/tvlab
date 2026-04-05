@@ -2133,9 +2133,24 @@ function clearTslot() { document.querySelectorAll('.tslot').forEach(s => s.class
 // ════════════════════════════════════════════
 let curSmsId = null;
 
-function openSms(id) {
-  const all = getAllItems();
-  const j = all.find(x => x.id === id);
+function openSms(id, date) {
+  // date가 있으면 해당 날짜에서 찾기 (통계 모달에서 호출 시)
+  let j;
+  if (date && date !== curDate) {
+    const base = BASE[date] || [];
+    const uJ = getJobsForDate(date);
+    if (id.startsWith('b_')) {
+      const i = parseInt(id.slice(2));
+      const s = base[i];
+      const sv = uJ[id] || {};
+      if (s) j = { ...s, id, status: sv.status||'sched', items: sv.items||[], revenue: sv.revenue||0, discounts: sv.discounts||{}, phone: sv.phone||s.phone||'', smsSent: sv.smsSent||false };
+    } else {
+      j = Object.values(uJ).find(x => x.id === id);
+    }
+  } else {
+    const all = getAllItems();
+    j = all.find(x => x.id === id);
+  }
   if (!j) return;
   curSmsPhone = (j.phone || '').replace(/[^0-9]/g, '');
   curSmsId = id;
@@ -2306,10 +2321,12 @@ function statsGoToDate(ds) {
 
 function statsGoToItem(ds, id) {
   closeStats();
+  // expandedState 먼저 초기화
+  Object.keys(expandedState).forEach(k => { expandedState[k] = false; });
   setDate(ds);
   setView('day');
-  // renderDay 완료 후 카드 펼치기 (충분한 딜레이)
-  setTimeout(() => statsExpandCard(id), 500);
+  // renderDay 동기적으로 완료되므로 짧은 딜레이 후 실행
+  setTimeout(() => statsExpandCard(id), 100);
 }
 
 function statsExpandCard(id) {
@@ -2490,7 +2507,7 @@ function renderStats() {
           ? '<span style="font-size:10px;color:#66bb6a;margin-left:4px;">📨발송</span>'
           : '';
         const smsBtn = !j.smsSent
-          ? '<button data-sid="'+j.id+'" onclick="event.stopPropagation();openSms(this.dataset.sid)" style="background:rgba(255,107,53,.2);color:var(--accent2);border:1px solid rgba(255,107,53,.3);padding:4px 8px;border-radius:6px;font-size:10px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;">📋 비용안내</button>'
+          ? '<button data-sid="'+j.id+'" data-date="'+j.date+'" onclick="event.stopPropagation();openSms(this.dataset.sid,this.dataset.date)" style="background:rgba(255,107,53,.2);color:var(--accent2);border:1px solid rgba(255,107,53,.3);padding:4px 8px;border-radius:6px;font-size:10px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;">📋 비용안내</button>'
           : '';
         return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 10px;background:var(--card2);border-radius:8px;margin-bottom:5px;gap:8px;">'
           + '<div style="flex:1;min-width:0">'
