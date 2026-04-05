@@ -369,7 +369,7 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
   <div class="hr1">
     <div class="logo-area">
       <div class="logo">TV LAB</div>
-      <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 5px;border-radius:4px;margin-left:2px;font-weight:700;" id="verTag">v04/05 12:13</span>
+      <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 5px;border-radius:4px;margin-left:2px;font-weight:700;" id="verTag">v04/05 12:24</span>
       <span class="sync" id="syncEl" style="display:none"></span>
       <button class="boss-only" onclick="openTrash()" style="background:none;border:none;color:var(--text2);font-size:16px;cursor:pointer;padding:0 4px" title="휴지통">🗑️</button>
       <button class="boss-only settings-btn" onclick="toggleSettings()" title="상품 설정">⚙️</button>
@@ -2321,38 +2321,52 @@ function statsGoToDate(ds) {
 }
 
 function statsGoToItem(ds, id) {
+  // 1. 통계 모달 닫기
   closeStats();
-  // expandedState 먼저 초기화
+  // 2. expandedState 초기화
   Object.keys(expandedState).forEach(k => { expandedState[k] = false; });
+  // 3. 날짜 이동 + 렌더링 (동기)
   setDate(ds);
   setView('day');
-  // renderDay 동기적으로 완료되므로 짧은 딜레이 후 실행
-  setTimeout(() => statsExpandCard(id), 100);
+  // 4. DOM 완전히 그려진 후 카드 펼치기 (requestAnimationFrame 2번으로 보장)
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      statsExpandCard(id);
+    });
+  });
 }
 
 function statsExpandCard(id) {
   const card = document.getElementById('card_' + id);
   const body = document.getElementById('body_' + id);
-  if (!card) return;
 
+  if (!card || !body) {
+    // 아직 DOM에 없으면 한번 더 재시도
+    setTimeout(() => {
+      const c2 = document.getElementById('card_' + id);
+      const b2 = document.getElementById('body_' + id);
+      if (!c2 || !b2) return;
+      _doExpandCard(id, c2, b2);
+    }, 300);
+    return;
+  }
+  _doExpandCard(id, card, body);
+}
+
+function _doExpandCard(id, card, body) {
   // 아코디언 - 다른 모든 카드 닫기
-  const all = getAllItems();
-  all.forEach(j => {
-    if (j.id === id) return;
-    const b = document.getElementById('body_' + j.id);
-    if (b && b.classList.contains('expanded')) {
-      b.classList.remove('expanded');
-      b.classList.add('collapsed');
-      expandedState[j.id] = false;
-    }
+  document.querySelectorAll('[id^="body_"]').forEach(b => {
+    if (b.id === 'body_' + id) return;
+    b.classList.remove('expanded');
+    b.classList.add('collapsed');
+    const bid = b.id.replace('body_', '');
+    expandedState[bid] = false;
   });
 
-  // 해당 카드 펼치기
-  if (body) {
-    body.classList.remove('collapsed');
-    body.classList.add('expanded');
-    expandedState[id] = true;
-  }
+  // 펼치기
+  body.classList.remove('collapsed');
+  body.classList.add('expanded');
+  expandedState[id] = true;
 
   // 스크롤
   card.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2361,7 +2375,7 @@ function statsExpandCard(id) {
   setTimeout(() => {
     card.classList.add('shake');
     setTimeout(() => card.classList.remove('shake'), 600);
-  }, 300);
+  }, 200);
 }
 
 function toggleStatCard(uid) {
@@ -2475,11 +2489,22 @@ function renderStats() {
       const sv = uJ['b_'+i] || {};
       if (sv.deleted) return;
       const status = sv.status || 'sched';
-      if (status === 'paid') {
-        paid.push({ title: s.title, dong: sv.dong||s.dong||'', date: ds, revenue: sv.revenue||0 });
-      } else if (status === 'done') {
-        unpaid.push({ title: s.title, dong: sv.dong||s.dong||'', date: ds, revenue: sv.revenue||0 });
-      }
+      const entry = {
+        id: 'b_'+i,
+        title: s.title,
+        dong: sv.dong !== undefined ? sv.dong : (s.dong||''),
+        date: ds,
+        revenue: sv.revenue||0,
+        smsSent: sv.smsSent||false,
+        status,
+        items: sv.items||[],
+        discounts: sv.discounts||{},
+        cost: sv.cost||0,
+        margin: sv.margin||0,
+        phone: sv.phone||s.phone||'',
+      };
+      if (status === 'paid') paid.push(entry);
+      else if (status === 'done') unpaid.push(entry);
     });
     // 사용자 추가 일정
     Object.values(uJ).filter(j => j.id && !j.id.startsWith('b_') && !j.deleted).forEach(j => {
