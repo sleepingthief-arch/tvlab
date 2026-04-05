@@ -371,7 +371,7 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/05 12:43</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/05 12:54</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -894,45 +894,46 @@ function updateDateDisplay() {
 }
 
 function fetchWeather() {
-  if (!navigator.geolocation) return;
-  navigator.geolocation.getCurrentPosition(pos => {
-    const lat = pos.coords.latitude;
-    const lon = pos.coords.longitude;
-
-    // 기온 가져오기
-    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&current_weather=true&timezone=Asia%2FSeoul`)
-      .then(r => r.json())
-      .then(data => {
-        const temp = data.current_weather?.temperature;
-        const el = document.getElementById('weatherEl');
-        if (el && temp !== undefined) {
-          el.textContent = `${Math.round(temp)}°C`;
-        }
-      })
-      .catch(() => {});
-
-    // 동네명 가져오기 (카카오 역지오코딩 - 무료)
-    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=ko`)
-      .then(r => r.json())
-      .then(data => {
-        const addr = data.address;
-        // 동/읍/면 우선, 없으면 구/군
-        // 동/읍 우선, 없으면 구/군
-        let dong = addr.suburb || addr.quarter || addr.neighbourhood
-                 || addr.village || addr.town || '';
-        // "신도시", "지구", "단지", "택지" 등 불필요한 접미사 제거
-        dong = dong.replace(/(신도시|지구|단지|택지|도시|아파트|센터|마을).*$/, '').trim();
-        const el = document.getElementById('locationEl');
-        if (el && dong) {
-          el.textContent = dong;
-        }
-      })
-      .catch(() => {});
-
-  }, () => {
-    // 위치 거부 시 조용히 실패
-  }, { timeout: 8000, enableHighAccuracy: false });
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+      fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat.toFixed(4)+'&longitude='+lon.toFixed(4)+'&current_weather=true&timezone=Asia%2FSeoul')
+        .then(r=>r.json()).then(data=>{
+          const temp = data.current_weather && data.current_weather.temperature;
+          const el = document.getElementById('weatherEl');
+          if (el && temp !== undefined) el.textContent = Math.round(temp)+'°C';
+        }).catch(()=>{});
+      fetch('https://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+lon+'&format=json&accept-language=ko')
+        .then(r=>r.json()).then(data=>{
+          const addr = data.address || {};
+          let dong = addr.suburb||addr.quarter||addr.neighbourhood||addr.village||addr.town||'';
+          dong = dong.replace(/(신도시|지구|단지|택지|도시|아파트|센터|마을).*$/,'').trim();
+          const el = document.getElementById('locationEl');
+          if (el && dong) el.textContent = dong;
+        }).catch(()=>{});
+    }, ()=>{ fetchWeatherByIP(); }, {timeout:5000,enableHighAccuracy:false});
+  } else {
+    fetchWeatherByIP();
+  }
 }
+
+function fetchWeatherByIP() {
+  fetch('https://ipapi.co/json/')
+    .then(r=>r.json())
+    .then(d=>{
+      const locEl = document.getElementById('locationEl');
+      if (locEl && d.city) locEl.textContent = d.city;
+      return fetch('https://api.open-meteo.com/v1/forecast?latitude='+d.latitude+'&longitude='+d.longitude+'&current_weather=true&timezone=Asia%2FSeoul');
+    })
+    .then(r=>r.json())
+    .then(data=>{
+      const temp = data.current_weather && data.current_weather.temperature;
+      const el = document.getElementById('weatherEl');
+      if (el && temp !== undefined) el.textContent = Math.round(temp)+'°C';
+    }).catch(()=>{});
+}
+
 
 function manualRefresh() {
   jobs = JSON.parse(localStorage.getItem('tvl_' + curDate) || '{}');
