@@ -517,7 +517,7 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
 </div>
 
 <!-- SMS 모달 -->
-<div class="ov" id="ovSms">
+<div class="ov" id="ovSms" style="z-index:600;">
 <div class="modal">
   <div class="mhd"><span id="smsTitle">비용 안내</span><button class="mclose" onclick="closeSms()">✕</button></div>
   <!-- 탭 선택 -->
@@ -2308,16 +2308,8 @@ function statsGoToItem(ds, id) {
   closeStats();
   setDate(ds);
   setView('day');
-  setTimeout(() => {
-    const card = document.getElementById('card_' + id);
-    const body = document.getElementById('body_' + id);
-    if (!card) {
-      // renderDay 후 재시도 (BASE 아이템 등)
-      setTimeout(() => statsExpandCard(id), 200);
-      return;
-    }
-    statsExpandCard(id);
-  }, 350);
+  // renderDay 완료 후 카드 펼치기 (충분한 딜레이)
+  setTimeout(() => statsExpandCard(id), 500);
 }
 
 function statsExpandCard(id) {
