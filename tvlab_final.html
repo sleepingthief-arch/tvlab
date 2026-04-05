@@ -169,7 +169,7 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
 .search-res-hd{font-size:12px;color:var(--accent);font-weight:700;padding:8px 0 6px;}
 
 /* 오버레이 */
-.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;overflow-y:auto;padding:20px 16px 40px;}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:400;overflow-y:auto;padding:20px 16px 40px;}
 .ov.show{display:block;}
 .modal{background:var(--card);border-radius:16px;padding:18px;border:1px solid var(--border);max-width:480px;margin:0 auto;}
 .mhd{display:flex;justify-content:space-between;align-items:center;font-size:16px;font-weight:700;color:var(--accent);margin-bottom:14px;}
@@ -2308,25 +2308,47 @@ function statsGoToItem(ds, id) {
   closeStats();
   setDate(ds);
   setView('day');
-  // 약간 딜레이 후 해당 카드 흔들기 + 펼치기
   setTimeout(() => {
     const card = document.getElementById('card_' + id);
     const body = document.getElementById('body_' + id);
-    if (!card) return;
-    // 펼치기
-    if (body && !body.classList.contains('expanded')) {
-      // 다른 거 닫기
-      document.querySelectorAll('[id^="sc_"]').forEach(e => {
-        e.classList.remove('expanded');
-        e.classList.add('collapsed');
-      });
-      body.classList.remove('collapsed');
-      body.classList.add('expanded');
-      expandedState[id] = true;
+    if (!card) {
+      // renderDay 후 재시도 (BASE 아이템 등)
+      setTimeout(() => statsExpandCard(id), 200);
+      return;
     }
-    // 스크롤
-    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    // 흔들기
+    statsExpandCard(id);
+  }, 350);
+}
+
+function statsExpandCard(id) {
+  const card = document.getElementById('card_' + id);
+  const body = document.getElementById('body_' + id);
+  if (!card) return;
+
+  // 아코디언 - 다른 모든 카드 닫기
+  const all = getAllItems();
+  all.forEach(j => {
+    if (j.id === id) return;
+    const b = document.getElementById('body_' + j.id);
+    if (b && b.classList.contains('expanded')) {
+      b.classList.remove('expanded');
+      b.classList.add('collapsed');
+      expandedState[j.id] = false;
+    }
+  });
+
+  // 해당 카드 펼치기
+  if (body) {
+    body.classList.remove('collapsed');
+    body.classList.add('expanded');
+    expandedState[id] = true;
+  }
+
+  // 스크롤
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  // 흔들기
+  setTimeout(() => {
     card.classList.add('shake');
     setTimeout(() => card.classList.remove('shake'), 600);
   }, 300);
