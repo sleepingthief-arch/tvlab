@@ -369,16 +369,17 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
   <div class="hr1">
     <div class="logo-area">
       <div class="logo">TV LAB</div>
-      <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 5px;border-radius:4px;margin-left:2px;font-weight:700;" id="verTag">v04/05 12:24</span>
+      <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 5px;border-radius:4px;margin-left:2px;font-weight:700;" id="verTag">v04/05 12:36</span>
+      <!-- 동네 + 기온 -->
+      <div id="dateWeatherEl" style="display:flex;align-items:center;gap:4px;margin-left:2px;">
+        <span id="locationEl" style="font-size:11px;color:var(--text2);"></span>
+        <span id="weatherEl" style="font-size:11px;color:var(--accent2);font-weight:700;"></span>
+      </div>
       <span class="sync" id="syncEl" style="display:none"></span>
       <button class="boss-only" onclick="openTrash()" style="background:none;border:none;color:var(--text2);font-size:16px;cursor:pointer;padding:0 4px" title="휴지통">🗑️</button>
       <button class="boss-only settings-btn" onclick="toggleSettings()" title="상품 설정">⚙️</button>
       <button class="boss-only" onclick="openStats()" style="background:none;border:none;color:var(--text2);font-size:16px;cursor:pointer;padding:0 4px" title="입금현황">💰</button>
-      <!-- 동네 + 기온 -->
-      <div id="dateWeatherEl" style="display:flex;align-items:center;gap:4px;margin-left:4px;">
-        <span id="locationEl" style="font-size:11px;color:var(--text2);"></span>
-        <span id="weatherEl" style="font-size:11px;color:var(--accent2);font-weight:700;"></span>
-      </div>
+
     </div>
     <div class="mbtns">
       <button class="mb on" id="btnS" onclick="setMode('staff')">일반뷰</button>
@@ -2161,7 +2162,7 @@ function openSms(id, date) {
   const dl = disc > 0 ? `\n• 할인: -${disc}만원` : '';
 
   // 문자 1: 기존 (기업은행)
-  const sms1 = `안녕하세요 고객님 😊\nTV 벽걸이 시공이 완료되었습니다!\n\n📋 시공 내역\n${itxt||'• 시공 완료'}${dl}\n───────────\n💰 합계: ${j.revenue.toFixed(0)}만원\n\n🏦 기업은행 299-053560-01-013\n예금주: 김문성\n\n*동호수로 보내주시거나, 보내신분 성함을 문자로 🔥꼭🔥 남겨주셔야 확인이 가능합니다.\n\n입금 부탁드립니다. 감사합니다 🙏`;
+  const sms1 = `안녕하세요.\n벽걸이 TV설치 티비랩입니다.\n\n시공 잔금\n총 ${j.revenue.toFixed(0)}만원 입니다.\n\n시공내역:\n${itxt||'• 시공 완료'}${dl}\n\n\n* 기업은행 299-053560-01-013 김문성\n\n\n*입금 후 ❤️보내신분 성함❤️동호수 문자로 🌟꼭 남겨주셔야 확인이 가능합니다.\n\n감사합니다.`;
 
   // 문자 2: 농협 티비랩
   const sms2 = `안녕하세요.\n벽걸이 TV설치 티비랩입니다.\n\n시공 잔금\n총 ${j.revenue.toFixed(0)}만원 입니다.\n\n시공내역:\n${itxt||'• 시공 완료'}${dl}\n\n\n* 농협 301 0319 1850 31 주식회사 티비랩\n\n\n*입금 후 ❤️보내신분 성함❤️동호수 문자로 🌟꼭 남겨주셔야 확인이 가능합니다.\n\n감사합니다.`;
