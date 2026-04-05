@@ -2429,10 +2429,16 @@ function renderStats() {
         const d = new Date(j.date+'T00:00:00');
         const dateStr = (d.getMonth()+1)+'/'+(d.getDate());
         const smsIcon = j.smsSent ? '<span style="font-size:10px;color:#66bb6a;margin-left:4px;">📨발송</span>' : '<span style="font-size:10px;color:var(--accent2);margin-left:4px;">미발송</span>';
-        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 10px;background:var(--card2);border-radius:8px;margin-bottom:5px;cursor:pointer;" onclick="statsGoToDate(&quot;'+j.date+'&quot;)">'
+        const uid = 'sc_'+j.date.replace(/-/g,'')+'_u'+idx;
+        return '<div style="background:var(--card2);border-radius:8px;margin-bottom:5px;overflow:hidden;">'
+          + '<div data-uid="'+uid+'" style="display:flex;justify-content:space-between;align-items:center;padding:9px 10px;cursor:pointer;" onclick="toggleStatCard(this.dataset.uid)">'
           + '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--text)">' + j.title + smsIcon + '</div>'
           + '<div style="font-size:11px;color:var(--text2);margin-top:1px;">' + dateStr + (j.dong?' · '+j.dong:'') + '</div></div>'
-          + '<div style="font-size:13px;font-weight:700;color:var(--accent2)">' + (j.revenue>0?j.revenue.toFixed(0)+'만':'') + '</div>'
+          + '<div style="font-size:13px;font-weight:700;color:var(--accent2)">' + (j.revenue>0?j.revenue.toFixed(0)+'만':'') + ' ▼</div>'
+          + '</div>'
+          + '<div id="'+uid+'" style="display:none;border-top:1px solid var(--border);padding:8px 10px;">'
+          + getStatCardHTML(j)
+          + '</div>'
           + '</div>';
       }).join('')
     : '<div style="text-align:center;padding:20px;color:var(--text2);font-size:13px;">미입금 없어요 ✅</div>';
@@ -2442,10 +2448,16 @@ function renderStats() {
     ? paid.map((j, idx) => {
         const d = new Date(j.date+'T00:00:00');
         const dateStr = (d.getMonth()+1)+'/'+(d.getDate());
-        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 10px;background:var(--card2);border-radius:8px;margin-bottom:5px;cursor:pointer;" onclick="statsGoToDate(&quot;'+j.date+'&quot;)">'
+        const pid2 = 'sc_'+j.date.replace(/-/g,'')+'_p2'+idx;
+        return '<div style="background:var(--card2);border-radius:8px;margin-bottom:5px;overflow:hidden;">'
+          + '<div data-uid="'+pid2+'" style="display:flex;justify-content:space-between;align-items:center;padding:9px 10px;cursor:pointer;" onclick="toggleStatCard(this.dataset.uid)">'
           + '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--text)">' + j.title + '</div>'
           + '<div style="font-size:11px;color:var(--text2);margin-top:1px;">' + dateStr + (j.dong?' · '+j.dong:'') + '</div></div>'
-          + '<div style="font-size:13px;font-weight:700;color:#ffd166">💳 ' + (j.revenue>0?j.revenue.toFixed(0)+'만':'') + '</div>'
+          + '<div style="font-size:13px;font-weight:700;color:#ffd166">💳 ' + (j.revenue>0?j.revenue.toFixed(0)+'만':'') + ' ▼</div>'
+          + '</div>'
+          + '<div id="'+pid2+'" style="display:none;border-top:1px solid var(--border);padding:8px 10px;">'
+          + getStatCardHTML(j)
+          + '</div>'
           + '</div>';
       }).join('')
     : '<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px;">입금완료 내역 없음</div>';
