@@ -295,6 +295,18 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
 @keyframes slideFromRight{from{transform:translateX(var(--from-x,100%))}to{transform:translateX(0)}}
 @keyframes slideFromLeft{from{transform:translateX(var(--from-x,-100%))}to{transform:translateX(0)}}
 
+/* 흔들기 애니메이션 */
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  15%{transform:translateX(-6px);}
+  30%{transform:translateX(6px);}
+  45%{transform:translateX(-4px);}
+  60%{transform:translateX(4px);}
+  75%{transform:translateX(-2px);}
+  90%{transform:translateX(2px);}
+}
+.shake{animation:shake .5s ease;}
+
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#c0606a;color:#fff;padding:10px 22px;border-radius:99px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;}
 #colorSelectPop button:active{background:var(--card3) !important;}
@@ -1027,6 +1039,10 @@ function fmtDate(d) {
 }
 
 function setDate(ds) {
+  // 날짜 바뀌면 펼침 상태 초기화
+  if (ds !== curDate) {
+    Object.keys(expandedState).forEach(k => { expandedState[k] = false; });
+  }
   curDate = ds;
   const dateInp = document.getElementById('dateInp');
   if (dateInp) dateInp.value = ds;
@@ -2288,6 +2304,34 @@ function statsGoToDate(ds) {
   setView('day');
 }
 
+function statsGoToItem(ds, id) {
+  closeStats();
+  setDate(ds);
+  setView('day');
+  // 약간 딜레이 후 해당 카드 흔들기 + 펼치기
+  setTimeout(() => {
+    const card = document.getElementById('card_' + id);
+    const body = document.getElementById('body_' + id);
+    if (!card) return;
+    // 펼치기
+    if (body && !body.classList.contains('expanded')) {
+      // 다른 거 닫기
+      document.querySelectorAll('[id^="sc_"]').forEach(e => {
+        e.classList.remove('expanded');
+        e.classList.add('collapsed');
+      });
+      body.classList.remove('collapsed');
+      body.classList.add('expanded');
+      expandedState[id] = true;
+    }
+    // 스크롤
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // 흔들기
+    card.classList.add('shake');
+    setTimeout(() => card.classList.remove('shake'), 600);
+  }, 300);
+}
+
 function toggleStatCard(uid) {
   const el = document.getElementById(uid);
   if (!el) return;
@@ -2428,16 +2472,20 @@ function renderStats() {
     ? unpaid.map((j, idx) => {
         const d = new Date(j.date+'T00:00:00');
         const dateStr = (d.getMonth()+1)+'/'+(d.getDate());
-        const smsIcon = j.smsSent ? '<span style="font-size:10px;color:#66bb6a;margin-left:4px;">📨발송</span>' : '<span style="font-size:10px;color:var(--accent2);margin-left:4px;">미발송</span>';
-        const uid = 'sc_'+j.date.replace(/-/g,'')+'_u'+idx;
-        return '<div style="background:var(--card2);border-radius:8px;margin-bottom:5px;overflow:hidden;">'
-          + '<div data-uid="'+uid+'" style="display:flex;justify-content:space-between;align-items:center;padding:9px 10px;cursor:pointer;" onclick="toggleStatCard(this.dataset.uid)">'
-          + '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--text)">' + j.title + smsIcon + '</div>'
+        const sentBadge = j.smsSent
+          ? '<span style="font-size:10px;color:#66bb6a;margin-left:4px;">📨발송</span>'
+          : '';
+        const smsBtn = !j.smsSent
+          ? '<button data-sid="'+j.id+'" onclick="event.stopPropagation();openSms(this.dataset.sid)" style="background:rgba(255,107,53,.2);color:var(--accent2);border:1px solid rgba(255,107,53,.3);padding:4px 8px;border-radius:6px;font-size:10px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;">📋 비용안내</button>'
+          : '';
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 10px;background:var(--card2);border-radius:8px;margin-bottom:5px;gap:8px;">'
+          + '<div style="flex:1;min-width:0">'
+          + '<div data-date="'+j.date+'" data-id="'+j.id+'" style="font-size:13px;font-weight:700;color:var(--text);cursor:pointer;display:inline;" onclick="statsGoToItem(this.dataset.date, this.dataset.id)">' + j.title + '</div>'
+          + sentBadge
           + '<div style="font-size:11px;color:var(--text2);margin-top:1px;">' + dateStr + (j.dong?' · '+j.dong:'') + '</div></div>'
-          + '<div style="font-size:13px;font-weight:700;color:var(--accent2)">' + (j.revenue>0?j.revenue.toFixed(0)+'만':'') + ' ▼</div>'
-          + '</div>'
-          + '<div id="'+uid+'" style="display:none;border-top:1px solid var(--border);padding:8px 10px;">'
-          + getStatCardHTML(j)
+          + '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">'
+          + smsBtn
+          + '<span style="font-size:13px;font-weight:700;color:var(--accent2)">' + (j.revenue>0?j.revenue.toFixed(0)+'만':'') + '</span>'
           + '</div>'
           + '</div>';
       }).join('')
@@ -2448,16 +2496,10 @@ function renderStats() {
     ? paid.map((j, idx) => {
         const d = new Date(j.date+'T00:00:00');
         const dateStr = (d.getMonth()+1)+'/'+(d.getDate());
-        const pid2 = 'sc_'+j.date.replace(/-/g,'')+'_p2'+idx;
-        return '<div style="background:var(--card2);border-radius:8px;margin-bottom:5px;overflow:hidden;">'
-          + '<div data-uid="'+pid2+'" style="display:flex;justify-content:space-between;align-items:center;padding:9px 10px;cursor:pointer;" onclick="toggleStatCard(this.dataset.uid)">'
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 10px;background:var(--card2);border-radius:8px;margin-bottom:5px;">'
           + '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--text)">' + j.title + '</div>'
           + '<div style="font-size:11px;color:var(--text2);margin-top:1px;">' + dateStr + (j.dong?' · '+j.dong:'') + '</div></div>'
-          + '<div style="font-size:13px;font-weight:700;color:#ffd166">💳 ' + (j.revenue>0?j.revenue.toFixed(0)+'만':'') + ' ▼</div>'
-          + '</div>'
-          + '<div id="'+pid2+'" style="display:none;border-top:1px solid var(--border);padding:8px 10px;">'
-          + getStatCardHTML(j)
-          + '</div>'
+          + '<div style="font-size:13px;font-weight:700;color:#ffd166">💳 ' + (j.revenue>0?j.revenue.toFixed(0)+'만':'') + '</div>'
           + '</div>';
       }).join('')
     : '<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px;">입금완료 내역 없음</div>';
