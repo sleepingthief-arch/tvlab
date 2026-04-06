@@ -371,7 +371,7 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/05 12:54</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/06 10:40</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1993,14 +1993,18 @@ function openGroupSelect(groupId, groupChip) {
 
   const pop = document.createElement('div');
   pop.id = 'groupSelectPop';
-  pop.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px';
+  pop.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px';
 
-  const btnHtml = groupChip.groupItems.map(gi =>
-    '<button data-gid="'+groupId+'" data-id="'+gi.id+'" data-n="'+gi.n+'" data-rev="'+gi.def+'" data-cost="'+gi.cost+'" class="gsel-btn"'
+  // 인치 정보 추출 (예: "65이하 무타공" → "65이하")
+  const inchPrefix = groupChip.n.replace(/(무타공|타공|재설치).*/,'').trim();
+  const btnHtml = groupChip.groupItems.map(gi => {
+    // 미정은 인치 안 붙임, 나머지는 "65이하 가벽특수무타공" 형태
+    const fullName = (gi.n === '미정' || !inchPrefix) ? gi.n : inchPrefix + ' ' + gi.n;
+    return '<button data-gid="'+groupId+'" data-id="'+gi.id+'" data-n="'+fullName+'" data-rev="'+gi.def+'" data-cost="'+gi.cost+'" class="gsel-btn"'
     + ' style="width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:13px 14px;border-radius:10px;font-size:13px;font-family:inherit;cursor:pointer;margin-bottom:8px;text-align:left;display:flex;justify-content:space-between">'
     + '<span>'+gi.n+'</span><span style="color:var(--accent);font-weight:700">'+gi.s+'</span>'
-    + '</button>'
-  ).join('');
+    + '</button>';
+  }).join('');
 
   pop.innerHTML = '<div style="background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:320px;border:1px solid var(--border)">'
     + '<div style="font-size:15px;font-weight:700;color:var(--accent);margin-bottom:14px">📺 '+groupChip.n+' 선택</div>'
@@ -2040,7 +2044,7 @@ function openColorSelect(id, it) {
 
   const pop = document.createElement('div');
   pop.id = 'colorSelectPop';
-  pop.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px';
+  pop.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px';
   const btnHtml = it.colors.map(col => {
     return '<button data-id="'+id+'" data-col="'+col+'" class="csel-btn"'
       + ' style="width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:10px;font-size:14px;font-family:inherit;cursor:pointer;margin-bottom:8px;text-align:left">'
@@ -2161,7 +2165,10 @@ function openSms(id, date) {
   curSmsPhone = (j.phone || '').replace(/[^0-9]/g, '');
   curSmsId = id;
 
-  const itxt = (j.items||[]).map(i => `• ${i.n||i.name}: ${(i.revenue||0).toFixed(0)}만원`).join('\n');
+  const itxt = (j.items||[]).map(i => {
+    const nm = i.n || i.name || '';
+    return `• ${nm}: ${(i.revenue||0).toFixed(0)}만원`;
+  }).join('\n');
   const disc = j.discounts ? Object.values(j.discounts).reduce((a,b)=>a+b,0) : 0;
   const dl = disc > 0 ? `\n• 할인: -${disc}만원` : '';
 
