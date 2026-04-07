@@ -165,8 +165,8 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
 .cal-cell:nth-child(7n+1) .cal-dn{color:#d32f2f;}
 .cal-cell:nth-child(7n) .cal-dn{color:#1565c0;}
 .cal-chips{display:flex;flex-direction:column;gap:1px;flex:1;overflow:hidden;}
-.cal-chip{font-size:10px;padding:1px 5px;border-radius:3px;overflow:hidden;white-space:nowrap;text-overflow:clip;line-height:1.6;font-weight:500;}
-.cal-more{font-size:9px;color:#1565c0;padding:0 2px;font-weight:500;}
+.cal-chip{font-size:10px;padding:1px 3px;overflow:hidden;white-space:nowrap;text-overflow:clip;line-height:1.6;font-weight:500;}
+.cal-more{font-size:9px;color:#1967d2;padding:0 3px;font-weight:600;flex-shrink:0;}
 
 /* 검색 결과 */
 .search-res{padding:0 16px;}
@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 13:07</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 13:14</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1746,18 +1746,20 @@ function calCell(ds, day, other, isToday, isSel) {
     const isPaid = s.status==='paid';
     const isDone = s.status==='done'||isPaid;
     let bg, color;
-    if (isPaid || isDone) { bg='#e6f4ea'; color='#137333'; }
-    else if (s.cardColor) { bg=s.cardColor+'22'; color=s.cardColor; }
-    else { bg='#e8f0fe'; color='#1967d2'; }
+    if (isPaid || isDone) { color='#137333'; }
+    else if (s.cardColor) { color=s.cardColor; }
+    else { color='#1967d2'; }
     const icon = isPaid ? '💳 ' : '';
     const title = (s.title||'');
-    return `<div class="cal-chip" style="background:${bg};color:${color}">${icon}${title}</div>`;
+    return `<div class="cal-chip" style="color:${color}">${icon}${title}</div>`;
   }).join('');
   // 매출 표시 제거
   const cls = ['cal-cell', other?'other':'', isToday&&!other?'today':'', isSel&&!other?'sel':'', allJ.length&&!other?'has':''].filter(Boolean).join(' ');
+  const moreHtml = more > 0 ? `<div class="cal-more">+${more}</div>` : '';
   return `<div class="${cls}" onclick="calClick('${ds}')">
     <div class="cal-dn">${day}</div>
     <div class="cal-chips">${chips}</div>
+    ${moreHtml}
   </div>`;
 }
 
