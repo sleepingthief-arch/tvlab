@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 17:30</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 17:43</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -421,6 +421,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
   <button class="vt" id="vtMon" onclick="setView('month')">📅 월별</button>
   <button onclick="goToday();setView('day');" style="background:var(--accent);color:#fff;border:none;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;">오늘</button>
   <button class="mat-btn" onclick="openMat()">📦 자재</button>
+  <button class="mat-btn" onclick="openBlog()">📝 블로그</button>
 </div>
 
 <!-- 설정 페이지 -->
@@ -454,6 +455,20 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
         style="width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:10px;font-size:13px;font-family:inherit;resize:none;line-height:1.5;"
         oninput="saveMatMemo(this.value)"></textarea>
     </div>
+  </div>
+</div>
+
+<!-- 블로그 모달 -->
+<div class="mat-modal" id="blogModal" onclick="if(event.target===this)closeBlog()">
+  <div class="mat-box">
+    <div class="mat-handle"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="mat-hd" id="blogTitle">📝 블로그 초안</div>
+      <button onclick="closeBlog()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:10px;">복사 후 Claude에 붙여넣으면 블로그 글이 완성돼요!</div>
+    <textarea id="blogText" rows="12" readonly style="width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:10px;font-size:12px;font-family:inherit;line-height:1.7;resize:none;"></textarea>
+    <button onclick="copyBlogText()" style="width:100%;margin-top:10px;background:var(--accent);color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;">📋 복사하기</button>
   </div>
 </div>
 
@@ -1147,6 +1162,62 @@ function searchGoToItem(ds, id) {
       });
     });
   }
+}
+
+function openBlog() {
+  var NL = String.fromCharCode(10);
+  var all = getAllItems();
+  var d = new Date(curDate + 'T00:00:00');
+  var days = ['일','월','화','수','목','금','토'];
+  var dateStr = d.getFullYear() + '년 ' + (d.getMonth()+1) + '월 ' + d.getDate() + '일 (' + days[d.getDay()] + ')';
+  var done = all.filter(function(j){ return j.status==='done'||j.status==='paid'; });
+  var sched = all.filter(function(j){ return j.status!=='done'&&j.status!=='paid'; });
+  var lines = [];
+  lines.push('📅 ' + dateStr + ' 시공 일정');
+  lines.push('총 ' + all.length + '건');
+  lines.push('');
+  if (sched.length > 0) {
+    lines.push('[ 시공 내역 ]');
+    sched.forEach(function(j, i) {
+      var items = (j.items||[]).map(function(it){ return it.n; }).join(', ');
+      lines.push((i+1) + '. ' + j.title);
+      if (j.time) lines.push('   ⏰ ' + j.time);
+      if (j.dong) lines.push('   🏠 ' + j.dong);
+      if (items) lines.push('   📺 ' + items);
+      lines.push('');
+    });
+  }
+  if (done.length > 0) {
+    lines.push('[ 완료 내역 ]');
+    done.forEach(function(j, i) {
+      var items = (j.items||[]).map(function(it){ return it.n; }).join(', ');
+      lines.push((i+1) + '. ' + j.title + (j.status==='paid' ? ' 💳' : ' ✅'));
+      if (j.dong) lines.push('   🏠 ' + j.dong);
+      if (items) lines.push('   📺 ' + items);
+      lines.push('');
+    });
+  }
+  lines.push('---');
+  lines.push('위 내용을 바탕으로 TV 벽걸이 시공 블로그 글을 작성해줘.');
+  lines.push('친근하고 전문적인 톤으로, 고객에게 도움이 되는 내용으로 부탁해.');
+  var txt = lines.join(NL);
+  document.getElementById('blogTitle').textContent = '📝 ' + (d.getMonth()+1) + '/' + d.getDate() + ' 블로그 초안';
+  document.getElementById('blogText').value = txt;
+  document.getElementById('blogModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeBlog() {
+  document.getElementById('blogModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function copyBlogText() {
+  var txt = document.getElementById('blogText').value;
+  navigator.clipboard.writeText(txt).then(function() {
+    showToast('복사됐어요! Claude에 붙여넣으세요 😊');
+    closeBlog();
+  });
 }
 
 function manualRefresh() {
