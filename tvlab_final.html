@@ -117,7 +117,7 @@ body.staff .write-only{display:none!important;}
 .cost-val.c{color:var(--accent2);}.cost-val.m{color:var(--green);}
 
 .jitems{font-size:11px;color:var(--text2);line-height:1.7;margin-bottom:8px;}
-.jmemo-orig{font-size:11px;color:var(--text3);line-height:1.6;background:var(--card2);border-radius:6px;padding:7px 9px;margin-bottom:8px;white-space:pre-wrap;}
+.jmemo-orig{font-size:11px;color:var(--text3);line-height:1.6;background:var(--card2);border-radius:6px;padding:7px 9px;margin-bottom:8px;white-space:pre-wrap;color:var(--text);font-weight:400;}
 .jmemo{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:9px 11px;border-radius:8px;font-size:12px;font-family:inherit;resize:vertical;min-height:110px;line-height:1.7;margin-bottom:8px;overflow-y:auto;}
 .jmemo:focus{outline:none;border-color:var(--accent);}
 body.staff .jmemo{pointer-events:none;opacity:.5;}
@@ -142,27 +142,31 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
 .empty-icon{font-size:40px;margin-bottom:12px;}
 
 /* 월별 캘린더 */
-.cal-wrap{padding:0;display:flex;flex-direction:column;height:calc(100vh - 170px);}
-.cal-nav{display:flex;justify-content:space-between;align-items:center;padding:12px 0 10px;}
-.cal-month{font-size:17px;font-weight:700;}
-.cal-nb{background:var(--card2);border:1px solid var(--border);color:var(--text);width:34px;height:34px;border-radius:8px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.cal-grid-wrap{flex:1;padding:0 4px 4px;overflow:hidden;}
+.cal-wrap{padding:0;display:flex;flex-direction:column;height:calc(100vh - 160px);}
+.cal-nav{display:flex;justify-content:space-between;align-items:center;padding:10px 8px 6px;}
+.cal-month{font-size:16px;font-weight:600;color:var(--text);}
+.cal-nb{background:none;border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.cal-nb:active{background:var(--card2);}
+.cal-grid-wrap{flex:1;overflow:hidden;border-top:1px solid var(--border);}
 .cal-slider{flex:1;position:relative;overflow:hidden;touch-action:pan-y;}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;gap:2px;height:100%;}
-.cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);padding:0 4px;}
-.cal-dow{text-align:center;font-size:11px;font-weight:700;color:var(--text2);padding:4px 0;}
-.cal-cell{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:4px 4px 2px;cursor:pointer;overflow:hidden;display:flex;flex-direction:column;}
-.cal-cell.today{border-color:#ff6b35;background:rgba(255,107,53,.08);}
-.cal-cell.sel{border-color:var(--yellow);background:rgba(255,209,102,.05);}
-.cal-cell.other{opacity:.3;}
-.cal-cell.has{border-color:rgba(0,232,122,.25);}
-.cal-dn{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:2px;flex-shrink:0;}
-.cal-cell.today .cal-dn{background:var(--accent);color:#000;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;}
-.cal-chips{display:flex;flex-direction:column;gap:2px;flex:1;overflow:hidden;}
-.cal-chip{font-size:10px;padding:2px 4px;border-radius:4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;line-height:1.4;font-weight:500;}
-.cal-chip.s{background:rgba(100,160,255,.2);color:#80b0ff;}
-.cal-chip.d{background:rgba(102,187,106,.2);color:#66bb6a;}
-.cal-more{font-size:9px;color:var(--text3);padding:1px 2px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;height:100%;}
+.cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border);}
+.cal-dow{text-align:center;font-size:11px;font-weight:600;color:var(--text2);padding:5px 0;letter-spacing:.3px;}
+.cal-dow:first-child{color:#d32f2f;}
+.cal-dow:last-child{color:#1565c0;}
+.cal-cell{border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:4px 3px 2px;cursor:pointer;overflow:hidden;display:flex;flex-direction:column;min-height:0;}
+.cal-cell:nth-child(7n){border-right:none;}
+.cal-cell.today{background:#fff8f5;}
+.cal-cell.sel{background:#f0f7ff;}
+.cal-cell.other .cal-dn{color:#ccc;}
+.cal-cell.other .cal-chip{opacity:.4;}
+.cal-dn{font-size:11px;font-weight:500;color:var(--text2);margin-bottom:1px;flex-shrink:0;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;}
+.cal-cell.today .cal-dn{background:var(--accent);color:#fff;font-weight:700;}
+.cal-cell:nth-child(7n+1) .cal-dn{color:#d32f2f;}
+.cal-cell:nth-child(7n) .cal-dn{color:#1565c0;}
+.cal-chips{display:flex;flex-direction:column;gap:1px;flex:1;overflow:hidden;}
+.cal-chip{font-size:10px;padding:1px 5px;border-radius:3px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;line-height:1.6;font-weight:500;}
+.cal-more{font-size:9px;color:#1565c0;padding:0 2px;font-weight:500;}
 
 /* 검색 결과 */
 .search-res{padding:0 16px;}
@@ -340,7 +344,8 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
 .color-dot.selected{border-color:#fff;transform:scale(1.2);}
 
 /* 원본 메모 수정 가능 */
-.jmemo-edit{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text3);padding:9px 11px;border-radius:8px;font-size:12px;font-family:inherit;resize:vertical;min-height:120px;line-height:1.7;margin-bottom:8px;overflow-y:auto;}
+body.staff .jmemo-edit{color:var(--text);opacity:1;}
+.jmemo-edit{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:9px 11px;border-radius:8px;font-size:12px;font-family:inherit;resize:vertical;min-height:120px;line-height:1.7;margin-bottom:8px;overflow-y:auto;}
 .jmemo-edit:focus{outline:none;border-color:var(--accent);color:var(--text);}
 
 
@@ -382,7 +387,7 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 12:05</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 12:50</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1737,21 +1742,27 @@ function calCell(ds, day, other, isToday, isSel) {
   ].sort((a,b) => (a.time||'') > (b.time||'') ? 1 : -1);
   const shown = allJ; // 전체 표시
   const more = 0;
-  let chips = shown.map(s => {
+  // 구글 캘린더 스타일 색상
+  const chipColors = [
+    {bg:'#e8f0fe',color:'#1967d2'},
+    {bg:'#e6f4ea',color:'#137333'},
+    {bg:'#fce8e6',color:'#c5221f'},
+    {bg:'#fef7e0',color:'#b06000'},
+    {bg:'#f3e8fd',color:'#7627bb'},
+    {bg:'#e4f7fb',color:'#007b83'},
+  ];
+  let chips = shown.map((s, idx) => {
     const isPaid = s.status==='paid';
     const isDone = s.status==='done'||isPaid;
-    const color = isPaid ? '#ffd166' : s.cardColor || (isDone ? '#66bb6a' : '#80b0ff');
-    const bg = isPaid
-      ? 'rgba(255,209,102,.25)'
-      : isDone
-        ? 'rgba(102,187,106,.25)'
-        : s.cardColor
-          ? s.cardColor + '33'
-          : 'rgba(100,160,255,.2)';
+    let bg, color;
+    if (isPaid) { bg='#e6f4ea'; color='#137333'; }
+    else if (isDone) { bg='#e6f4ea'; color='#137333'; }
+    else if (s.cardColor) { bg=s.cardColor+'22'; color=s.cardColor; }
+    else { const cc=chipColors[idx%chipColors.length]; bg=cc.bg; color=cc.color; }
     const icon = isPaid ? '💳 ' : '';
-    return `<div class="cal-chip" style="background:${bg};color:${color}">${icon}${(s.title||'').slice(0,6)}</div>`;
+    const title = (s.title||'');
+    return `<div class="cal-chip" style="background:${bg};color:${color}">${icon}${title}</div>`;
   }).join('');
-  if (more > 0) chips += `<div class="cal-more">+${more}</div>`;
   // 매출 표시 제거
   const cls = ['cal-cell', other?'other':'', isToday&&!other?'today':'', isSel&&!other?'sel':'', allJ.length&&!other?'has':''].filter(Boolean).join(' ');
   return `<div class="${cls}" onclick="calClick('${ds}')">
@@ -2826,10 +2837,11 @@ function autoTitle(text) {
   text = text.replace(/@\S+/g, '').trim();
   const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
 
-  // 아파트명: 첫줄에서 동호수/전화번호 제거
+  // 아파트명: 첫줄에서 동호수/전화번호/xxx-xxxx 제거
   let aptName = (lines[0] || '')
     .replace(/01[0-9][-\s]?\d{3,4}[-\s]?\d{4}/g,'')
     .replace(/\d+동\s*\d+호/g,'')
+    .replace(/\b\d{2,4}-\d{3,4}\b/g,'')
     .trim();
 
   // 인치
