@@ -156,8 +156,8 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
 .cal-dow:last-child{color:#1565c0;}
 .cal-cell{border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:4px 3px 2px;cursor:pointer;overflow:hidden;display:flex;flex-direction:column;min-height:0;}
 .cal-cell:nth-child(7n){border-right:none;}
-.cal-cell.today{background:#fff8f5;}
-.cal-cell.sel{background:#f0f7ff;}
+.cal-cell.today{background:none;}
+.cal-cell.sel{background:none;}
 .cal-cell.other .cal-dn{color:#ccc;}
 .cal-cell.other .cal-chip{opacity:.4;}
 .cal-dn{font-size:11px;font-weight:500;color:var(--text2);margin-bottom:1px;flex-shrink:0;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;}
@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 13:14</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 13:54</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -447,6 +447,13 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <button onclick="closeMat()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">✕</button>
     </div>
     <div id="matList"></div>
+    <!-- 부가자재 메모란 -->
+    <div style="margin-top:14px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;">📝 부가자재 메모</div>
+      <textarea id="matMemo" rows="3" placeholder="직접 입력하세요 (예: 앵커볼트 4개, 긴나사 2개...)"
+        style="width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:10px;font-size:13px;font-family:inherit;resize:none;line-height:1.5;"
+        oninput="saveMatMemo(this.value)"></textarea>
+    </div>
   </div>
 </div>
 
@@ -996,8 +1003,18 @@ function openMat() {
       '<div class="mat-item"><span class="mat-name">'+n+'</span><span class="mat-cnt">×'+cnt+'</span></div>'
     ).join('');
   }
+  // 메모 불러오기
+  const memoKey = 'matMemo_' + curDate;
+  const savedMemo = localStorage.getItem(memoKey) || '';
+  document.getElementById('matMemo').value = savedMemo;
+
   document.getElementById('matModal').classList.add('show');
   document.body.style.overflow = 'hidden';
+}
+
+function saveMatMemo(val) {
+  const memoKey = 'matMemo_' + curDate;
+  localStorage.setItem(memoKey, val);
 }
 
 function closeMat() {
