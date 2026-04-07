@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 17:03</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 17:23</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -730,10 +730,6 @@ const ITEMS = {
       {id:'lt98',n:'라이트무타공',s:'29만',def:29,cost:5},
       {id:'pr98',n:'프리미엄무타공',s:'35만',def:35,cost:9},
     ]},
-    {id:'mu98',n:'98인치 무타공',s:'',def:0,cost:0,group:'mu98',groupItems:[
-      {id:'lt98',n:'라이트무타공',s:'29만',def:29,cost:5},
-      {id:'pr98',n:'프리미엄무타공',s:'35만',def:35,cost:9},
-    ]},
     // 타공 (묶음)
     {id:'ta60',n:'65이하 타공',s:'',def:0,cost:0,group:'ta60',groupItems:[
       {id:'t60',n:'타공',s:'9만',def:9,cost:1},
@@ -751,28 +747,36 @@ const ITEMS = {
       {id:'t98',n:'타공',s:'28만',def:28,cost:1},
       {id:'gt98',n:'가벽타공',s:'28만',def:28,cost:1},
     ]},
-    // 재설치/선정리
-    {id:'re60',n:'65이하 무타공재설치',s:'13만',def:13,cost:0},
-    {id:'re70',n:'70인치대 무타공재설치',s:'15만',def:15,cost:0},
-    {id:'re80',n:'80인치대 무타공재설치',s:'17만',def:17,cost:0},
-    {id:'reSP',n:'사빠재설치',s:'3만',def:3,cost:0},
-    {id:'wc60',n:'65이하 선정리',s:'7만',def:7,cost:1},
-    {id:'wc70',n:'70인치대 선정리',s:'10만',def:10,cost:1},
-    {id:'wc80',n:'80인치대 선정리',s:'12만',def:12,cost:1},
+    // 재설치 (묶음)
+    {id:'reGrp',n:'무타공재설치',s:'',def:0,cost:0,group:'reGrp',groupItems:[
+      {id:'re60',n:'65이하 무타공재설치',s:'13만',def:13,cost:0},
+      {id:'re70',n:'70인치대 무타공재설치',s:'15만',def:15,cost:0},
+      {id:'re80',n:'80인치대 무타공재설치',s:'17만',def:17,cost:0},
+    ]},
+    // 선정리 (묶음)
+    {id:'wcGrp',n:'선정리',s:'',def:0,cost:0,group:'wcGrp',groupItems:[
+      {id:'wc60',n:'65이하 선정리',s:'7만',def:7,cost:1},
+      {id:'wc70',n:'70인치대 선정리',s:'10만',def:10,cost:1},
+      {id:'wc80',n:'80인치대 선정리',s:'12만',def:12,cost:1},
+    ]},
   ],
   br:[
-    {id:'brU4',n:'55e',s:'4만',def:4,cost:1},
-    {id:'brU5',n:'상하브라켓(5만)',s:'5만',def:5,cost:2,group:'brU5',groupItems:[
-      {id:'brU5_70e',n:'70e',s:'5만',def:5,cost:2},
-      {id:'brU5_70p',n:'70p',s:'5만',def:5,cost:2},
+    // 상하브라켓 묶음
+    {id:'brUGrp',n:'상하브라켓',s:'',def:0,cost:0,group:'brUGrp',groupItems:[
+      {id:'brU4',n:'55e',s:'4만',def:4,cost:1},
+      {id:'brU5e',n:'70e',s:'5만',def:5,cost:2},
+      {id:'brU5p',n:'70p',s:'5만',def:5,cost:2},
     ]},
     {id:'brAll',n:'상하좌우',s:'7만',def:7,cost:2.5},
     {id:'br98',n:'98인치브라켓',s:'8만',def:8,cost:2},
     {id:'brS75',n:'삼성정품(75)',s:'10만',def:10,cost:6},
     {id:'brS85',n:'삼성정품(85)',s:'15만',def:15,cost:10},
-    {id:'brH1',n:'후기브라켓(55e)',s:'무료/원가1만',def:0,cost:1},
-    {id:'brH15',n:'후기브라켓(70e)',s:'무료/원가1.5만',def:0,cost:1.5},
-    {id:'brH2',n:'후기브라켓(70p)',s:'무료/원가2만',def:0,cost:2},
+    // 후기브라켓 묶음
+    {id:'brHGrp',n:'후기브라켓',s:'',def:0,cost:0,group:'brHGrp',groupItems:[
+      {id:'brH1',n:'후기브라켓(55e)',s:'무료/원가1만',def:0,cost:1},
+      {id:'brH15',n:'후기브라켓(70e)',s:'무료/원가1.5만',def:0,cost:1.5},
+      {id:'brH2',n:'후기브라켓(70p)',s:'무료/원가2만',def:0,cost:2},
+    ]},
   ],
   ex:[
     {id:'sb',n:'사운드바',s:'5만',def:5,cost:3},
@@ -1063,13 +1067,16 @@ function openMat() {
 
   // 자재명에서 공통키 추출 (55e, 70e, 70p, 상하좌우 등)
   function matKey(name) {
-    if (name.includes('55e')) return '55e';
-    if (name.includes('70e')) return '70e';
-    if (name.includes('70p')) return '70p';
-    if (name.includes('상하좌우')) return '상하좌우';
-    if (name.includes('삼성정품')) return name;
-    if (name.includes('98인치브라켓')) return '98인치브라켓';
-    return name;
+    // ×N 수량 제거 후 키 추출
+    const base = name.replace(/\s*×\d+/g,'').trim();
+    if (base.includes('55e')) return '55e';
+    if (base.includes('70e')) return '70e';
+    if (base.includes('70p')) return '70p';
+    if (base.includes('상하좌우')) return '상하좌우';
+    if (base.includes('삼성정품(75)')) return '삼성정품(75)';
+    if (base.includes('삼성정품(85)')) return '삼성정품(85)';
+    if (base.includes('98인치브라켓')) return '98인치브라켓';
+    return base;
   }
   all.forEach(j => {
     if (j.status === 'done' || j.status === 'paid' || j.deleted) return;
@@ -3001,7 +3008,6 @@ const KEYWORD_MAP = [
   {keys:['가벽타공','가벽타'],                   inch:true, gt:true},
   {keys:['타공'],                                inch:true, t:true},
   {keys:['무타공재설치','무재설치'],             inch:true, re:true},
-  {keys:['사빠재설치'],                          id:'reSP'},
   {keys:['선정리','선매립'],                     inch:true, wc:true},
   {keys:['상하좌우','풀모션'],                   id:'brAll'},
   {keys:['삼성정품','삼성브라켓','삼성브'],      inch:true, sam:true},
