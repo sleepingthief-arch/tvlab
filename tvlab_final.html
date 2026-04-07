@@ -165,7 +165,7 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
 .cal-cell:nth-child(7n+1) .cal-dn{color:#d32f2f;}
 .cal-cell:nth-child(7n) .cal-dn{color:#1565c0;}
 .cal-chips{display:flex;flex-direction:column;gap:1px;flex:1;overflow:hidden;}
-.cal-chip{font-size:10px;padding:1px 5px;border-radius:3px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;line-height:1.6;font-weight:500;}
+.cal-chip{font-size:10px;padding:1px 5px;border-radius:3px;overflow:hidden;white-space:nowrap;text-overflow:clip;line-height:1.6;font-weight:500;}
 .cal-more{font-size:9px;color:#1565c0;padding:0 2px;font-weight:500;}
 
 /* 검색 결과 */
@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 12:50</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 13:07</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1543,7 +1543,7 @@ function cardHTML(j) {
       ${colorPicker}
       ${revHTML}
       ${itemsTxt ? `<div class="jitems">${itemsTxt}${disc>0?' · 할인-'+disc+'만':''}</div>` : ''}
-      ${j.memo ? `<textarea class="jmemo-edit" rows="3" onblur="saveOrigMemo('${j.id}',this.value)">${j.memo}</textarea>` : ''}
+      ${j.memo ? (isBoss ? `<textarea class="jmemo-edit" rows="3" onblur="saveOrigMemo('${j.id}',this.value)">${j.memo}</textarea>` : `<div class="jmemo-edit" style="pointer-events:none;user-select:text;">${j.memo}</div>`) : ''}
       <textarea class="jmemo" placeholder="추가 메모..." onblur="saveUserMemo('${j.id}', this.value)">${(j.userMemo&&j.userMemo!==j.memo)?j.userMemo:''}</textarea>
       ${btns}
     </div>
@@ -1740,25 +1740,15 @@ function calCell(ds, day, other, isToday, isSel) {
     }).filter(x=>!x.deleted),
     ...Object.values(uJ).filter(j => j.id && !j.id.startsWith('b_') && !j.deleted)
   ].sort((a,b) => (a.time||'') > (b.time||'') ? 1 : -1);
-  const shown = allJ; // 전체 표시
-  const more = 0;
-  // 구글 캘린더 스타일 색상
-  const chipColors = [
-    {bg:'#e8f0fe',color:'#1967d2'},
-    {bg:'#e6f4ea',color:'#137333'},
-    {bg:'#fce8e6',color:'#c5221f'},
-    {bg:'#fef7e0',color:'#b06000'},
-    {bg:'#f3e8fd',color:'#7627bb'},
-    {bg:'#e4f7fb',color:'#007b83'},
-  ];
+  const shown = allJ.slice(0, 5);
+  const more = allJ.length - 5;
   let chips = shown.map((s, idx) => {
     const isPaid = s.status==='paid';
     const isDone = s.status==='done'||isPaid;
     let bg, color;
-    if (isPaid) { bg='#e6f4ea'; color='#137333'; }
-    else if (isDone) { bg='#e6f4ea'; color='#137333'; }
+    if (isPaid || isDone) { bg='#e6f4ea'; color='#137333'; }
     else if (s.cardColor) { bg=s.cardColor+'22'; color=s.cardColor; }
-    else { const cc=chipColors[idx%chipColors.length]; bg=cc.bg; color=cc.color; }
+    else { bg='#e8f0fe'; color='#1967d2'; }
     const icon = isPaid ? '💳 ' : '';
     const title = (s.title||'');
     return `<div class="cal-chip" style="background:${bg};color:${color}">${icon}${title}</div>`;
