@@ -14,10 +14,10 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
 :root{
-  --bg:#1c1c1c;--card:#2c2c2c;--card2:#3c3c3c;--card3:#4a4a4a;
-  --accent:#ff6b35;--accent2:#ffd166;--green:#66bb6a;--red:#ff3d57;
-  --yellow:#ffd166;--purple:#b47aff;
-  --text:#f0f0f0;--text2:#aaaaaa;--text3:#666666;--border:#444444;
+  --bg:#f5f5f0;--card:#ffffff;--card2:#f0ede8;--card3:#e8e4df;
+  --accent:#e8521a;--accent2:#d4880a;--green:#2e9e4f;--red:#d63031;
+  --yellow:#d4880a;--purple:#7c5cbf;
+  --text:#1a1a1a;--text2:#666666;--text3:#999999;--border:#ddddd8;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px;}
@@ -70,7 +70,7 @@ body.staff .boss-only{display:none!important;}
 body.staff .write-only{display:none!important;}
 
 /* PIN */
-.pin-ov{display:none;position:fixed;inset:0;background:rgba(10,10,10,.97);z-index:500;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+.pin-ov{display:none;position:fixed;inset:0;background:rgba(30,30,30,.92);z-index:500;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
 .pin-ov.show{display:flex;}
 .pdots{display:flex;gap:12px;}
 .pdot{width:14px;height:14px;border-radius:50%;border:2px solid var(--text3);transition:.2s;}
@@ -169,7 +169,7 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
 .search-res-hd{font-size:12px;color:var(--accent);font-weight:700;padding:8px 0 6px;}
 
 /* 오버레이 */
-.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:400;overflow-y:auto;padding:20px 16px 40px;}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;overflow-y:auto;padding:20px 16px 40px;}
 .ov.show{display:block;}
 .modal{background:var(--card);border-radius:16px;padding:18px;border:1px solid var(--border);max-width:480px;margin:0 auto;}
 .mhd{display:flex;justify-content:space-between;align-items:center;font-size:16px;font-weight:700;color:var(--accent);margin-bottom:14px;}
@@ -307,6 +307,17 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
 }
 .shake{animation:shake .5s ease;}
 
+/* 자재 탭 */
+.mat-btn{background:var(--card2);border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;margin-left:8px;}
+.mat-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;align-items:flex-end;justify-content:center;}
+.mat-modal.show{display:flex;}
+.mat-box{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:500px;max-height:70vh;overflow-y:auto;padding:0 16px 30px;}
+.mat-handle{width:40px;height:4px;background:var(--border);border-radius:99px;margin:12px auto 0;}
+.mat-hd{font-size:16px;font-weight:700;color:var(--text);padding:14px 0 10px;}
+.mat-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--card2);border-radius:10px;margin-bottom:6px;}
+.mat-name{font-size:13px;font-weight:700;color:var(--text);}
+.mat-cnt{font-size:18px;font-weight:900;color:var(--accent);}
+
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#c0606a;color:#fff;padding:10px 22px;border-radius:99px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;}
 #colorSelectPop button:active{background:var(--card3) !important;}
@@ -371,7 +382,7 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/06 10:40</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 12:05</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -400,9 +411,11 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
 </div>
 
 <!-- 뷰 탭 -->
-<div class="vtabs">
+<div class="vtabs" style="display:flex;gap:6px;align-items:center;">
   <button class="vt on" id="vtDay" onclick="setView('day')">📋 일별</button>
   <button class="vt" id="vtMon" onclick="setView('month')">📅 월별</button>
+  <button onclick="goToday();setView('day');" style="background:var(--accent);color:#fff;border:none;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;">오늘</button>
+  <button class="mat-btn" onclick="openMat()">📦 자재</button>
 </div>
 
 <!-- 설정 페이지 -->
@@ -418,6 +431,18 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
   <div id="settingsBody"></div>
   <button class="settings-save-btn" onclick="saveSettings()">💾 저장하기</button>
   <button class="settings-reset-btn" onclick="resetSettings()">↩ 기본값으로 리셋</button>
+</div>
+
+<!-- 자재 모달 -->
+<div class="mat-modal" id="matModal" onclick="if(event.target===this)closeMat()">
+  <div class="mat-box">
+    <div class="mat-handle"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="mat-hd" id="matTitle">📦 오늘 자재</div>
+      <button onclick="closeMat()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div id="matList"></div>
+  </div>
 </div>
 
 <!-- 검색 결과 (검색창은 헤더로 이동) -->
@@ -662,7 +687,7 @@ const ITEMS = {
   ex:[
     {id:'sb',n:'사운드바',s:'5만',def:5,cost:3},
     {id:'sbR',n:'사운드바재설치',s:'3만',def:3,cost:0},
-    {id:'nt',n:'닌텐도/스위치',s:'2만',def:2,cost:0.2},
+    {id:'nt',n:'닌텐도',s:'2만',def:2,cost:0.2},
     {id:'ps4',n:'플스4',s:'2만',def:2,cost:0.2},
     {id:'jini',n:'지니',s:'2만',def:2,cost:0.2},
     {id:'aria',n:'아리아',s:'2만',def:2,cost:0.2},
@@ -674,8 +699,10 @@ const ITEMS = {
     {id:'hj',n:'휴젠트',s:'39.9만',def:39.9,cost:27},
     {id:'mlm',n:'멀말',s:'무료',def:0,cost:0},
     {id:'mt',n:'멀티탭',s:'1만',def:1,cost:0.4},
+    {id:'mtsvc',n:'멀티탭서비스',s:'0원',def:0,cost:0.4},
   ],
   ck:[
+    {id:'ck0',n:'시계설치만',s:'4만',def:4,cost:0},
     {id:'lu1',n:'루나리스 GPS',s:'화이트/크림/멜로우',def:13,cost:6,colors:['화이트','크림','멜로우']},
     {id:'bk1',n:'백라이트 루나 온습도',s:'04 크림/마블/카키',def:15,cost:8,colors:['크림', '마블', '카키']},
     {id:'bk2',n:'백라이트 헥사곤 온습도',s:'05 크림/마블',def:16,cost:9,colors:['크림', '마블']},
@@ -934,6 +961,44 @@ function fetchWeatherByIP() {
     }).catch(()=>{});
 }
 
+
+function openMat() {
+  const all = getAllItems();
+  const matCount = {};
+  // 시계, 브라켓 카테고리만
+  const src = getActiveItems();
+  const ckIds = new Set((src.ck||[]).map(i=>i.id));
+  const brIds = new Set((src.br||[]).map(i=>i.id));
+
+  all.forEach(j => {
+    if (j.status === 'done' || j.status === 'paid' || j.deleted) return;
+    (j.items||[]).forEach(it => {
+      if (ckIds.has(it.id) || brIds.has(it.id)) {
+        matCount[it.n] = (matCount[it.n]||0) + 1;
+      }
+    });
+  });
+
+  const d = new Date(curDate+'T00:00:00');
+  document.getElementById('matTitle').textContent = '📦 ' + (d.getMonth()+1) + '/' + d.getDate() + ' 자재';
+
+  const list = document.getElementById('matList');
+  const entries = Object.entries(matCount);
+  if (!entries.length) {
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:13px;">자재 없음 😊</div>';
+  } else {
+    list.innerHTML = entries.map(([n,cnt]) =>
+      '<div class="mat-item"><span class="mat-name">'+n+'</span><span class="mat-cnt">×'+cnt+'</span></div>'
+    ).join('');
+  }
+  document.getElementById('matModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMat() {
+  document.getElementById('matModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
 
 function manualRefresh() {
   jobs = JSON.parse(localStorage.getItem('tvl_' + curDate) || '{}');
@@ -1670,8 +1735,8 @@ function calCell(ds, day, other, isToday, isSel) {
     }).filter(x=>!x.deleted),
     ...Object.values(uJ).filter(j => j.id && !j.id.startsWith('b_') && !j.deleted)
   ].sort((a,b) => (a.time||'') > (b.time||'') ? 1 : -1);
-  const shown = allJ.slice(0, 3);
-  const more = allJ.length - 3;
+  const shown = allJ; // 전체 표시
+  const more = 0;
   let chips = shown.map(s => {
     const isPaid = s.status==='paid';
     const isDone = s.status==='done'||isPaid;
@@ -2270,7 +2335,8 @@ function doSearch(q) {
     const ds = key.replace('tvl_','');
     Object.values(JSON.parse(localStorage.getItem(key)||'{}')).filter(j=>j.id&&!j.id.startsWith('b_')&&!j.deleted).forEach(j => {
       const ph = (j.phone||'').replace(/[^0-9]/g,'');
-      if (ph.includes(qc)||(j.title||'').toLowerCase().includes(q.toLowerCase())||(j.dong||'').toLowerCase().includes(q.toLowerCase())) {
+      const jmemo = (j.memo||j.userMemo||'').toLowerCase();
+      if (ph.includes(qc)||(j.title||'').toLowerCase().includes(q.toLowerCase())||(j.dong||'').toLowerCase().includes(q.toLowerCase())||jmemo.includes(q.toLowerCase())) {
         results.push({ ds, title:j.title, dong:j.dong||'', time:j.time||'', phone:j.phone||'', status:j.status||'sched' });
       }
     });
@@ -2757,6 +2823,7 @@ function detectInchShort(text) {
 }
 
 function autoTitle(text) {
+  text = text.replace(/@\S+/g, '').trim();
   const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
 
   // 아파트명: 첫줄에서 동호수/전화번호 제거
@@ -2793,7 +2860,9 @@ function parseMemo(text) {
     return;
   }
 
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  // @xxx 형식 제거
+  const cleaned = text.replace(/@\S+/g, '').trim();
+  const lines = cleaned.split('\n').map(l => l.trim()).filter(Boolean);
   parsedData = {};
 
   // 전화번호
@@ -2803,11 +2872,16 @@ function parseMemo(text) {
     if (m) { parsedData.phone = m[0].replace(/[\s]/g,''); break; }
   }
 
-  // 동호수
+  // 동호수: "102동 1903호" 또는 "102-1903" 형식
   const dongRegex = /\d+동\s*\d+호/;
+  const dongShortRegex = /(\d{2,4})-(\d{3,4})/;
   for (const line of lines) {
     const m = line.match(dongRegex);
     if (m) { parsedData.dong = m[0].replace(/\s+/g,' ').trim(); break; }
+    const m2 = line.match(dongShortRegex);
+    if (m2 && !line.match(phoneRegex)) {
+      parsedData.dong = m2[1]+'동 '+m2[2]+'호'; break;
+    }
   }
 
   // 제목 자동 생성 (입력란 비어있을 때만)
