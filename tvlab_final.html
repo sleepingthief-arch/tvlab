@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 14:08</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 14:16</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1578,7 +1578,7 @@ function cardHTML(j) {
       ${colorPicker}
       ${revHTML}
       ${itemsTxt ? `<div class="jitems">${itemsTxt}${disc>0?' · 할인-'+disc+'만':''}</div>` : ''}
-      ${j.memo ? (isBoss ? `<textarea class="jmemo-edit" rows="3" onblur="saveOrigMemo('${j.id}',this.value)">${j.memo}</textarea>` : `<div class="jmemo-edit" style="pointer-events:none;user-select:text;">${j.memo}</div>`) : ''}
+      ${j.memo ? `<div class="jmemo-readonly" style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:12px;line-height:1.6;color:var(--text);white-space:pre-wrap;margin-bottom:6px;user-select:text;">${j.memo}</div>` : ''}
       <textarea class="jmemo" placeholder="추가 메모..." onblur="saveUserMemo('${j.id}', this.value)">${(j.userMemo&&j.userMemo!==j.memo)?j.userMemo:''}</textarea>
       ${btns}
     </div>
