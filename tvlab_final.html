@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 22:52</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 23:03</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1262,19 +1262,39 @@ function openTimeline() {
     html += '<div style="position:absolute;left:44px;right:4px;top:' + top + 'px;height:1px;background:var(--border);"></div>';
   }
 
+  // 레인 배정 - 겹치는 일정은 옆으로 나란히
+  var lanes = []; // 각 레인의 마지막 종료시간(분)
+  blocks.forEach(function(b) {
+    var startMin = b.startH * 60 + b.startM;
+    var endMin = startMin + b.dur;
+    var lane = 0;
+    for (var l = 0; l < lanes.length; l++) {
+      if (lanes[l] <= startMin) { lane = l; break; }
+      lane = l + 1;
+    }
+    lanes[lane] = endMin;
+    b.lane = lane;
+  });
+  var numLanes = Math.max(1, lanes.length);
+  var laneW = Math.floor(100 / numLanes);
+
   // 일정 블록
   blocks.forEach(function(b, i) {
-    var top = ((b.startH + b.startM / 60 - minH) / totalH) * (timelineH);
-    var height = Math.max(28, (b.dur / 60 / totalH) * timelineH);
+    var top = ((b.startH + b.startM / 60 - minH) / totalH) * timelineH;
+    var height = Math.max(32, (b.dur / 60 / totalH) * timelineH);
     var endStr = b.endH + ':' + (b.endMm < 10 ? '0' : '') + b.endMm;
     var timeStr = (b.j.time || '?') + '~' + endStr;
     var status = b.j.status;
-    var opacity = (status === 'done' || status === 'paid') ? '1' : '0.85';
     var icon = status === 'paid' ? '💳' : status === 'done' ? '✅' : '📋';
-    html += '<div style="position:absolute;left:48px;right:6px;top:' + top + 'px;height:' + height + 'px;background:' + b.color + ';border-radius:6px;padding:3px 7px;overflow:hidden;opacity:' + opacity + ';">'
+    var leftPct  = 48 + b.lane * laneW * 2.2; // px 기반 간격
+    var widthPct = laneW * 2.0;
+    // 픽셀로 계산 (컨테이너 고정폭 기준 아님 → % 대신 고정값)
+    var blockLeft  = 'calc(' + (b.lane * (100/numLanes)) + '% + 48px)';
+    var blockRight = 'calc(' + ((numLanes - b.lane - 1) * (100/numLanes)) + '% + 4px)';
+    html += '<div style="position:absolute;left:' + blockLeft + ';right:' + blockRight + ';top:' + top + 'px;height:' + height + 'px;background:' + b.color + ';border-radius:6px;padding:4px 7px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.2);">'
       + '<div style="font-size:10px;color:#fff;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + icon + ' ' + b.j.title + '</div>'
-      + '<div style="font-size:9px;color:rgba(255,255,255,.8);">' + timeStr + ' · ' + b.dur + '분'
-      + (b.j.dong ? ' · ' + b.j.dong : '') + '</div>'
+      + '<div style="font-size:9px;color:rgba(255,255,255,.85);margin-top:1px;">' + timeStr + ' (' + b.dur + '분)' + '</div>'
+      + (b.j.dong && height > 44 ? '<div style="font-size:9px;color:rgba(255,255,255,.7);">' + b.j.dong + '</div>' : '')
       + '</div>';
   });
 
@@ -2531,6 +2551,28 @@ function upSelList() {
   }).join('');
 }
 
+function addManualItem() {
+  const nameEl = document.getElementById('manualName');
+  const revEl  = document.getElementById('manualRev');
+  const costEl = document.getElementById('manualCost');
+  const qtyEl  = document.getElementById('manualQty');
+  if (!nameEl) return;
+  const name = nameEl.value.trim();
+  if (!name) { showToast('상품명을 입력해주세요'); return; }
+  const rev  = parseFloat(revEl  ? revEl.value  : 0) || 0;
+  const cost = parseFloat(costEl ? costEl.value : 0) || 0;
+  const qty  = Math.max(1, parseInt(qtyEl ? qtyEl.value : 1) || 1);
+  const id   = 'manual_' + Date.now();
+  selItems[id] = { id, n: name, rev, cost, qty };
+  nameEl.value = '';
+  if (revEl)  revEl.value  = '';
+  if (costEl) costEl.value = '';
+  if (qtyEl)  qtyEl.value  = '1';
+  upSelList();
+  upPv();
+  showToast(name + ' 추가됐어요!');
+}
+
 function updSelQty(id, delta) {
   if (!selItems[id]) return;
   const qty = Math.max(1, (selItems[id].qty||1) + delta);
@@ -3495,12 +3537,15 @@ function toggleSettings() {
   const isShow = wrap.classList.contains('show');
   if (isShow) {
     wrap.classList.remove('show');
-    wrap.style.display = 'none';
+    wrap.style.removeProperty('display');
+    document.getElementById('viewDay').style.display = '';
+    document.getElementById('sumArea').style.display = '';
+    if (curView === 'month') document.getElementById('viewMonth').style.display = '';
   } else {
-    // 다른 뷰 숨기기
     document.getElementById('viewDay').style.display = 'none';
     document.getElementById('viewMonth').style.display = 'none';
     document.getElementById('sumArea').style.display = 'none';
+    wrap.style.removeProperty('display');
     wrap.classList.add('show');
     renderSettingsBody();
   }
