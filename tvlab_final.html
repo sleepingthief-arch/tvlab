@@ -185,19 +185,19 @@ body.staff .jmemo{pointer-events:none;opacity:.5;}
 
 /* 시간 슬롯 */
 .tslots{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px;}
-.tslot{background:var(--card2);border:1px solid var(--border);color:var(--text2);padding:7px;border-radius:8px;font-size:11px;text-align:center;cursor:pointer;font-family:inherit;}
+.tslot{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:7px;border-radius:8px;font-size:11px;text-align:center;cursor:pointer;font-family:inherit;}
 .tslot.on{background:rgba(255,107,53,.15);border-color:#ff6b35;color:#ff6b35;}
 
 /* 칩 */
-.clbl{font-size:11px;color:var(--accent);font-weight:700;letter-spacing:.5px;margin:12px 0 6px;}
+.clbl{font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.5px;margin:12px 0 6px;}
 .chips{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
-.chip{background:var(--card2);border:1px solid var(--border);color:var(--text2);padding:7px 5px;border-radius:8px;font-size:11px;text-align:center;cursor:pointer;font-family:inherit;line-height:1.4;transition:.15s;}
+.chip{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:7px 5px;border-radius:8px;font-size:11px;text-align:center;cursor:pointer;font-family:inherit;line-height:1.4;transition:.15s;}
 .chip.on{background:rgba(255,107,53,.15);border-color:#ff6b35;color:#ff6b35;}
 .chip-sub{font-size:9px;margin-top:2px;}
 
 /* 선택 항목 (금액 수정) */
 .sel-row{display:flex;align-items:center;background:var(--card2);border-radius:8px;padding:8px 10px;margin-bottom:5px;gap:8px;}
-.sel-name{flex:1;font-size:12px;}
+.sel-name{flex:1;font-size:12px;color:var(--text);font-weight:500;}
 .sel-inp{width:68px;background:var(--card);border:1px solid var(--border);color:var(--accent);padding:5px 8px;border-radius:6px;font-size:13px;font-weight:700;font-family:inherit;text-align:right;}
 .sel-inp:focus{outline:none;border-color:var(--accent);}
 .sel-unit{font-size:11px;color:var(--text2);}
@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 15:06</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 17:03</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -726,6 +726,14 @@ const ITEMS = {
       {id:'sp80',n:'가벽특수무타공',s:'40만',def:40,cost:9},
       {id:'mj80',n:'미정',s:'',def:0,cost:0},
     ]},
+    {id:'mu98',n:'98인치 무타공',s:'',def:0,cost:0,group:'mu98',groupItems:[
+      {id:'lt98',n:'라이트무타공',s:'29만',def:29,cost:5},
+      {id:'pr98',n:'프리미엄무타공',s:'35만',def:35,cost:9},
+    ]},
+    {id:'mu98',n:'98인치 무타공',s:'',def:0,cost:0,group:'mu98',groupItems:[
+      {id:'lt98',n:'라이트무타공',s:'29만',def:29,cost:5},
+      {id:'pr98',n:'프리미엄무타공',s:'35만',def:35,cost:9},
+    ]},
     // 타공 (묶음)
     {id:'ta60',n:'65이하 타공',s:'',def:0,cost:0,group:'ta60',groupItems:[
       {id:'t60',n:'타공',s:'9만',def:9,cost:1},
@@ -753,15 +761,18 @@ const ITEMS = {
     {id:'wc80',n:'80인치대 선정리',s:'12만',def:12,cost:1},
   ],
   br:[
-    {id:'brU4',n:'상하브라켓',s:'4만',def:4,cost:1},
-    {id:'brU5',n:'상하브라켓',s:'5만',def:5,cost:2},
+    {id:'brU4',n:'55e',s:'4만',def:4,cost:1},
+    {id:'brU5',n:'상하브라켓(5만)',s:'5만',def:5,cost:2,group:'brU5',groupItems:[
+      {id:'brU5_70e',n:'70e',s:'5만',def:5,cost:2},
+      {id:'brU5_70p',n:'70p',s:'5만',def:5,cost:2},
+    ]},
     {id:'brAll',n:'상하좌우',s:'7만',def:7,cost:2.5},
     {id:'br98',n:'98인치브라켓',s:'8만',def:8,cost:2},
     {id:'brS75',n:'삼성정품(75)',s:'10만',def:10,cost:6},
     {id:'brS85',n:'삼성정품(85)',s:'15만',def:15,cost:10},
-    {id:'brH1',n:'후기브라켓',s:'무료/원가1만',def:0,cost:1},
-    {id:'brH15',n:'후기브라켓',s:'무료/원가1.5만',def:0,cost:1.5},
-    {id:'brH2',n:'후기브라켓',s:'무료/원가2만',def:0,cost:2},
+    {id:'brH1',n:'후기브라켓(55e)',s:'무료/원가1만',def:0,cost:1},
+    {id:'brH15',n:'후기브라켓(70e)',s:'무료/원가1.5만',def:0,cost:1.5},
+    {id:'brH2',n:'후기브라켓(70p)',s:'무료/원가2만',def:0,cost:2},
   ],
   ex:[
     {id:'sb',n:'사운드바',s:'5만',def:5,cost:3},
@@ -797,6 +808,7 @@ const ITEMS = {
     {id:'ac',n:'아트콘',s:'13만',def:13,cost:1},
     {id:'vc',n:'베란다콘',s:'11만',def:11,cost:1},
     {id:'kc',n:'주방콘',s:'13만',def:13,cost:1},
+    {id:'cn1',n:'콘센트',s:'9만',def:9,cost:1},
     {id:'sw',n:'절수패달',s:'14만',def:14,cost:8},
   ],
 };
@@ -1049,11 +1061,25 @@ function openMat() {
   const ckIds = new Set((src.ck||[]).map(i=>i.id));
   const brIds = new Set((src.br||[]).map(i=>i.id));
 
+  // 자재명에서 공통키 추출 (55e, 70e, 70p, 상하좌우 등)
+  function matKey(name) {
+    if (name.includes('55e')) return '55e';
+    if (name.includes('70e')) return '70e';
+    if (name.includes('70p')) return '70p';
+    if (name.includes('상하좌우')) return '상하좌우';
+    if (name.includes('삼성정품')) return name;
+    if (name.includes('98인치브라켓')) return '98인치브라켓';
+    return name;
+  }
   all.forEach(j => {
     if (j.status === 'done' || j.status === 'paid' || j.deleted) return;
     (j.items||[]).forEach(it => {
       if (ckIds.has(it.id) || brIds.has(it.id)) {
-        matCount[it.n] = (matCount[it.n]||0) + 1;
+        const key = matKey(it.n);
+        // ×N 수량 파싱
+        const qm = it.n.match(/×(\d+)/);
+        const qty = qm ? parseInt(qm[1]) : 1;
+        matCount[key] = (matCount[key]||0) + qty;
       }
     });
   });
@@ -2129,7 +2155,7 @@ function togChip(id) {
     if (it.colors && it.colors.length > 1) {
       openColorSelect(id, it);
     } else {
-      selItems[id] = { id, n: it.n, rev: it.def, cost: it.cost };
+      selItems[id] = { id, n: it.n, rev: it.def, cost: it.cost, qty: 1 };
       const el = document.getElementById('chip_'+id);
       if (el) el.classList.add('on');
       upSelList(); upPv();
@@ -2191,7 +2217,7 @@ function openGroupSelect(groupId, groupChip) {
         const rev = parseFloat(btn.dataset.rev);
         const cost = parseFloat(btn.dataset.cost);
         const gid = btn.dataset.gid;
-        selItems[id] = { id, n, rev, cost };
+        selItems[id] = { id, n, rev, cost, qty: 1 };
         // 그룹 칩 on
         const el = document.getElementById('chip_'+gid);
         if (el) {
@@ -2263,11 +2289,23 @@ function upSelList() {
     const it = selItems[id];
     return `<div class="sel-row">
       <span class="sel-name">${it.n}</span>
+      <div style="display:flex;align-items:center;gap:3px;">
+        <button onclick="updSelQty('${id}',-1)" style="background:var(--card3);border:none;color:var(--text);width:22px;height:22px;border-radius:4px;font-size:13px;cursor:pointer;font-family:inherit;">-</button>
+        <span style="font-size:12px;font-weight:700;min-width:16px;text-align:center;">${it.qty||1}</span>
+        <button onclick="updSelQty('${id}',1)" style="background:var(--card3);border:none;color:var(--text);width:22px;height:22px;border-radius:4px;font-size:13px;cursor:pointer;font-family:inherit;">+</button>
+      </div>
       <input type="number" class="sel-inp" value="${it.rev}" onchange="updSelRev('${id}',this.value)">
       <span class="sel-unit">만원</span>
       <button class="sel-del" onclick="removeSelItem('${id}')">✕</button>
     </div>`;
   }).join('');
+}
+
+function updSelQty(id, delta) {
+  if (!selItems[id]) return;
+  const qty = Math.max(1, (selItems[id].qty||1) + delta);
+  selItems[id].qty = qty;
+  upSelList(); upPv();
 }
 
 function updSelRev(id, val) {
