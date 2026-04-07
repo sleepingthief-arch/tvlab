@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 17:43</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 19:11</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -421,7 +421,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
   <button class="vt" id="vtMon" onclick="setView('month')">📅 월별</button>
   <button onclick="goToday();setView('day');" style="background:var(--accent);color:#fff;border:none;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;">오늘</button>
   <button class="mat-btn" onclick="openMat()">📦 자재</button>
-  <button class="mat-btn" onclick="openBlog()">📝 블로그</button>
+  <button onclick="openBlog()" style="background:none;border:none;font-size:18px;cursor:pointer;padding:0 4px;" title="블로그 초안">✍️</button>
 </div>
 
 <!-- 설정 페이지 -->
@@ -544,6 +544,17 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
     <div id="selSec" style="display:none">
       <div class="clbl">✅ 선택 항목 (금액 수정 가능)</div>
       <div id="selList"></div>
+    </div>
+    <!-- 수동 상품 추가 -->
+    <div style="background:var(--card2);border-radius:10px;padding:10px 12px;margin-bottom:12px;">
+      <div class="clbl" style="margin-bottom:8px;">➕ 직접 추가</div>
+      <div style="display:flex;gap:6px;margin-bottom:6px;">
+        <input type="text" id="manualName" placeholder="상품명" style="flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);padding:7px 9px;border-radius:8px;font-size:12px;font-family:inherit;">
+        <input type="number" id="manualRev" placeholder="금액" style="width:68px;background:var(--card);border:1px solid var(--border);color:var(--text);padding:7px 8px;border-radius:8px;font-size:12px;font-family:inherit;text-align:right;">
+        <input type="number" id="manualCost" placeholder="원가" style="width:60px;background:var(--card);border:1px solid var(--border);color:var(--text);padding:7px 8px;border-radius:8px;font-size:12px;font-family:inherit;text-align:right;">
+        <button onclick="addManualItem()" style="background:var(--accent);color:#fff;border:none;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;">+</button>
+      </div>
+      <div style="font-size:10px;color:var(--text2);">만원 단위 입력</div>
     </div>
     <div class="dbox">
       <div class="dbox-title">할인</div>
@@ -700,6 +711,26 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
 </div>
 
 <script>
+// ── 한국 공휴일 ──
+const KR_HOLIDAYS = {
+  '01-01':'신정','03-01':'삼일절','05-05':'어린이날',
+  '06-06':'현충일','08-15':'광복절','10-03':'개천절',
+  '10-09':'한글날','12-25':'크리스마스',
+  '2025-01-28':'설날','2025-01-29':'설날','2025-01-30':'설날',
+  '2025-05-06':'대체공휴일','2025-10-05':'추석',
+  '2025-10-06':'추석','2025-10-07':'추석',
+  '2026-01-28':'설날','2026-01-29':'설날','2026-01-30':'설날',
+  '2026-02-27':'대체공휴일','2026-05-25':'부처님오신날',
+  '2026-09-24':'추석','2026-09-25':'추석','2026-09-26':'추석',
+  '2026-09-27':'대체공휴일',
+  '2027-01-27':'설날','2027-01-28':'설날','2027-01-29':'설날',
+  '2027-05-05':'어린이날','2027-09-14':'추석',
+  '2027-09-15':'추석','2027-09-16':'추석',
+};
+function getHoliday(ds) {
+  return KR_HOLIDAYS[ds] || KR_HOLIDAYS[ds.slice(5)] || null;
+}
+
 // ════════════════════════════════════════════
 // 색상 팔레트
 // ════════════════════════════════════════════
@@ -1971,8 +2002,11 @@ function calCell(ds, day, other, isToday, isSel) {
   // 매출 표시 제거
   const cls = ['cal-cell', other?'other':'', isToday&&!other?'today':'', isSel&&!other?'sel':'', allJ.length&&!other?'has':''].filter(Boolean).join(' ');
   const moreHtml = more > 0 ? `<div class="cal-more">+${more}</div>` : '';
+  const holiday = getHoliday(ds);
+  const holidayHtml = holiday && !other ? `<div style="font-size:8px;color:#d32f2f;line-height:1.2;overflow:hidden;white-space:nowrap;text-overflow:clip;">${holiday}</div>` : '';
   return `<div class="${cls}" onclick="calClick('${ds}')">
     <div class="cal-dn">${day}</div>
+    ${holidayHtml}
     <div class="cal-chips">${chips}</div>
     ${moreHtml}
   </div>`;
@@ -3187,6 +3221,8 @@ function autoTitle(text) {
     .replace(/01[0-9][-\s]?\d{3,4}[-\s]?\d{4}/g,'')
     .replace(/\d+동\s*\d+호/g,'')
     .replace(/\b\d{2,4}-\d{3,4}\b/g,'')
+    .replace(/\d+동/g,'')
+    .replace(/\d+호/g,'')
     .trim();
 
   // 인치
