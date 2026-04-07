@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 14:16</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 15:06</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -579,33 +579,100 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
 
 <!-- 통계 모달 -->
 <div class="ov" id="ovStats">
-<div class="modal">
-  <div class="mhd"><span>💰 입금 현황</span><button class="mclose" onclick="closeStats()">✕</button></div>
-  <!-- 월 선택 -->
-  <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;">
-    <button onclick="statsChangeMonth(-1)" style="background:var(--card2);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:8px;font-size:13px;cursor:pointer;">◀</button>
-    <div id="statsMonthLbl" style="flex:1;text-align:center;font-size:15px;font-weight:700;color:var(--text)"></div>
-    <button onclick="statsChangeMonth(1)" style="background:var(--card2);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:8px;font-size:13px;cursor:pointer;">▶</button>
+<div class="modal" style="padding:14px;">
+  <div class="mhd" style="margin-bottom:10px;"><span>💰 현황</span><button class="mclose" onclick="closeStats()">✕</button></div>
+
+  <!-- 탭 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;">
+    <button id="stab1" onclick="switchStatsTab(1)"
+      style="padding:9px;border-radius:10px;border:none;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;background:var(--accent);color:#fff;">💳 입금 현황</button>
+    <button id="stab2" onclick="switchStatsTab(2)"
+      style="padding:9px;border-radius:10px;border:1px solid var(--border);font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;background:var(--card2);color:var(--text2);">📊 매출 분석</button>
   </div>
-  <!-- 요약 -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
-    <div style="background:var(--card2);border-radius:12px;padding:12px;text-align:center;">
-      <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💳 입금완료</div>
-      <div id="statsPaidCnt" style="font-size:22px;font-weight:700;color:#ffd166;">0</div>
-      <div id="statsPaidRev" style="font-size:12px;color:var(--accent);margin-top:2px;">0만원</div>
+
+  <!-- 탭1: 입금현황 -->
+  <div id="statsTab1">
+    <!-- 월 선택 -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;">
+      <button onclick="statsChangeMonth(-1)" style="background:var(--card2);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:8px;font-size:13px;cursor:pointer;">◀</button>
+      <div id="statsMonthLbl" style="flex:1;text-align:center;font-size:15px;font-weight:700;color:var(--text)"></div>
+      <button onclick="statsChangeMonth(1)" style="background:var(--card2);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:8px;font-size:13px;cursor:pointer;">▶</button>
     </div>
-    <div style="background:var(--card2);border-radius:12px;padding:12px;text-align:center;">
-      <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">⏳ 미입금</div>
-      <div id="statsUnpaidCnt" style="font-size:22px;font-weight:700;color:var(--accent2);">0</div>
-      <div id="statsUnpaidRev" style="font-size:12px;color:var(--accent2);margin-top:2px;">0만원</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div style="background:var(--card2);border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💳 입금완료</div>
+        <div id="statsPaidCnt" style="font-size:22px;font-weight:700;color:#d4880a;">0</div>
+        <div id="statsPaidRev" style="font-size:12px;color:var(--accent);margin-top:2px;">0만원</div>
+        <div id="statsPaidMargin" style="font-size:11px;color:var(--green);margin-top:2px;">마진 0만원</div>
+      </div>
+      <div style="background:var(--card2);border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">⏳ 미입금</div>
+        <div id="statsUnpaidCnt" style="font-size:22px;font-weight:700;color:var(--accent2);">0</div>
+        <div id="statsUnpaidRev" style="font-size:12px;color:var(--accent2);margin-top:2px;">0만원</div>
+      </div>
     </div>
+    <div style="font-size:11px;font-weight:700;color:var(--accent2);margin-bottom:8px;">⏳ 미입금 목록</div>
+    <div id="statsUnpaidList" style="max-height:260px;overflow-y:auto;"></div>
+    <div style="font-size:11px;font-weight:700;color:#d4880a;margin:12px 0 8px;">💳 입금완료 목록</div>
+    <div id="statsPaidList" style="max-height:200px;overflow-y:auto;"></div>
   </div>
-  <!-- 미입금 목록 -->
-  <div style="font-size:11px;font-weight:700;color:var(--accent2);margin-bottom:8px;">⏳ 미입금 목록</div>
-  <div id="statsUnpaidList" style="max-height:300px;overflow-y:auto;"></div>
-  <!-- 입금완료 목록 -->
-  <div style="font-size:11px;font-weight:700;color:#ffd166;margin:12px 0 8px;">💳 입금완료 목록</div>
-  <div id="statsPaidList" style="max-height:200px;overflow-y:auto;"></div>
+
+  <!-- 탭2: 매출 분석 -->
+  <div id="statsTab2" style="display:none;">
+    <!-- 기간 선택 -->
+    <div style="background:var(--card2);border-radius:12px;padding:12px;margin-bottom:12px;">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:8px;font-weight:700;">📅 기간 설정</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div>
+          <div style="font-size:10px;color:var(--text2);margin-bottom:3px;">시작일</div>
+          <input type="date" id="salesFrom" style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);padding:7px 8px;border-radius:8px;font-size:12px;font-family:inherit;">
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text2);margin-bottom:3px;">종료일</div>
+          <input type="date" id="salesTo" style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);padding:7px 8px;border-radius:8px;font-size:12px;font-family:inherit;">
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button onclick="setSalesRange('month')" style="background:var(--accent);color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;">이번달</button>
+        <button onclick="setSalesRange('lastmonth')" style="background:var(--card);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;">지난달</button>
+        <button onclick="setSalesRange('week')" style="background:var(--card);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;">이번주</button>
+        <button onclick="setSalesRange('all')" style="background:var(--card);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;">전체</button>
+        <button onclick="renderSalesTab()" style="background:var(--green);color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;">조회</button>
+      </div>
+    </div>
+    <!-- 요약 카드 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px;">
+      <div style="background:var(--card2);border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--text2);margin-bottom:3px;">매출</div>
+        <div id="salesRevTotal" style="font-size:16px;font-weight:700;color:var(--accent);">0</div>
+        <div style="font-size:9px;color:var(--text2);">만원</div>
+      </div>
+      <div style="background:var(--card2);border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--text2);margin-bottom:3px;">원가</div>
+        <div id="salesCostTotal" style="font-size:16px;font-weight:700;color:var(--accent2);">0</div>
+        <div style="font-size:9px;color:var(--text2);">만원</div>
+      </div>
+      <div style="background:var(--card2);border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--text2);margin-bottom:3px;">마진</div>
+        <div id="salesMarginTotal" style="font-size:16px;font-weight:700;color:var(--green);">0</div>
+        <div style="font-size:9px;color:var(--text2);">만원</div>
+      </div>
+    </div>
+    <!-- 건수/마진율 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;">
+      <div style="background:var(--card2);border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--text2);margin-bottom:3px;">총 건수</div>
+        <div id="salesCntTotal" style="font-size:18px;font-weight:700;color:var(--text);">0건</div>
+      </div>
+      <div style="background:var(--card2);border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--text2);margin-bottom:3px;">마진율</div>
+        <div id="salesMarginRate" style="font-size:18px;font-weight:700;color:var(--green);">0%</div>
+      </div>
+    </div>
+    <!-- 일별 목록 -->
+    <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;">📋 기간 내 완료 목록</div>
+    <div id="salesList" style="max-height:300px;overflow-y:auto;"></div>
+  </div>
 </div>
 </div>
 
@@ -2423,6 +2490,17 @@ function openStats() {
   statsY = today.getFullYear();
   statsM = today.getMonth();
   renderStats();
+  // 매출탭 기본 이번달로 설정
+  const from = new Date(today.getFullYear(), today.getMonth(), 1);
+  const to = new Date(today.getFullYear(), today.getMonth()+1, 0);
+  setTimeout(() => {
+    const fe = document.getElementById('salesFrom');
+    const te = document.getElementById('salesTo');
+    if (fe) fe.value = fmtDate(from);
+    if (te) te.value = fmtDate(to);
+  }, 50);
+  // 탭1 활성화
+  switchStatsTab(1);
   document.getElementById('ovStats').classList.add('show');
   document.body.style.overflow = 'hidden';
 }
@@ -2430,6 +2508,108 @@ function openStats() {
 function closeStats() {
   document.getElementById('ovStats').classList.remove('show');
   document.body.style.overflow = '';
+}
+
+function switchStatsTab(n) {
+  document.getElementById('statsTab1').style.display = n===1 ? 'block' : 'none';
+  document.getElementById('statsTab2').style.display = n===2 ? 'block' : 'none';
+  document.getElementById('stab1').style.background = n===1 ? 'var(--accent)' : 'var(--card2)';
+  document.getElementById('stab1').style.color = n===1 ? '#fff' : 'var(--text2)';
+  document.getElementById('stab1').style.border = n===1 ? 'none' : '1px solid var(--border)';
+  document.getElementById('stab2').style.background = n===2 ? 'var(--accent)' : 'var(--card2)';
+  document.getElementById('stab2').style.color = n===2 ? '#fff' : 'var(--text2)';
+  document.getElementById('stab2').style.border = n===2 ? 'none' : '1px solid var(--border)';
+  if (n===2) renderSalesTab();
+}
+
+function setSalesRange(type) {
+  const today = new Date();
+  let from, to;
+  if (type === 'month') {
+    from = new Date(today.getFullYear(), today.getMonth(), 1);
+    to = new Date(today.getFullYear(), today.getMonth()+1, 0);
+  } else if (type === 'lastmonth') {
+    from = new Date(today.getFullYear(), today.getMonth()-1, 1);
+    to = new Date(today.getFullYear(), today.getMonth(), 0);
+  } else if (type === 'week') {
+    const day = today.getDay();
+    from = new Date(today); from.setDate(today.getDate() - day);
+    to = new Date(today); to.setDate(today.getDate() + (6-day));
+  } else {
+    // 전체 - BASE에서 첫날~오늘
+    const keys = Object.keys(BASE).sort();
+    from = keys.length ? new Date(keys[0]) : new Date(today.getFullYear(), 0, 1);
+    to = today;
+  }
+  document.getElementById('salesFrom').value = fmtDate(from);
+  document.getElementById('salesTo').value = fmtDate(to);
+  renderSalesTab();
+}
+
+function renderSalesTab() {
+  const fromVal = document.getElementById('salesFrom').value;
+  const toVal = document.getElementById('salesTo').value;
+  if (!fromVal || !toVal) return;
+
+  const fromD = new Date(fromVal+'T00:00:00');
+  const toD = new Date(toVal+'T23:59:59');
+
+  let totalRev = 0, totalCost = 0, totalMargin = 0, totalCnt = 0;
+  const items = [];
+
+  // BASE 순회
+  Object.entries(BASE).forEach(([ds, base]) => {
+    const d = new Date(ds+'T00:00:00');
+    if (d < fromD || d > toD) return;
+    const uJ = getJobsForDate(ds);
+    base.forEach((s, i) => {
+      const sv = uJ['b_'+i] || {};
+      if (sv.deleted) return;
+      const status = sv.status || 'sched';
+      if (status === 'done' || status === 'paid') {
+        const rev = sv.revenue || 0;
+        const cost = sv.cost || 0;
+        const margin = sv.margin || 0;
+        totalRev += rev; totalCost += cost; totalMargin += margin; totalCnt++;
+        items.push({ ds, title: s.title, rev, cost, margin, status });
+      }
+    });
+    // 사용자 추가 일정
+    Object.values(uJ).filter(j => j.id && !j.id.startsWith('b_') && !j.deleted).forEach(j => {
+      if (j.status === 'done' || j.status === 'paid') {
+        const rev = j.revenue || 0;
+        const cost = j.cost || 0;
+        const margin = j.margin || 0;
+        totalRev += rev; totalCost += cost; totalMargin += margin; totalCnt++;
+        items.push({ ds, title: j.title||'', rev, cost, margin, status: j.status });
+      }
+    });
+  });
+
+  document.getElementById('salesRevTotal').textContent = totalRev.toFixed(1);
+  document.getElementById('salesCostTotal').textContent = totalCost.toFixed(1);
+  document.getElementById('salesMarginTotal').textContent = totalMargin.toFixed(1);
+  document.getElementById('salesCntTotal').textContent = totalCnt + '건';
+  const rate = totalRev > 0 ? Math.round(totalMargin / totalRev * 100) : 0;
+  document.getElementById('salesMarginRate').textContent = rate + '%';
+
+  // 목록
+  items.sort((a,b) => a.ds > b.ds ? 1 : -1);
+  const listHtml = items.length ? items.map(it => {
+    const d = new Date(it.ds+'T00:00:00');
+    const dateStr = (d.getMonth()+1)+'/'+(d.getDate());
+    const isPaid = it.status === 'paid';
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 10px;background:var(--card2);border-radius:8px;margin-bottom:5px;">'
+      + '<div><div style="font-size:12px;font-weight:700;color:var(--text)">' + it.title + '</div>'
+      + '<div style="font-size:10px;color:var(--text2);margin-top:1px;">' + dateStr + (isPaid?' · 💳':'') + '</div></div>'
+      + '<div style="text-align:right;">'
+      + '<div style="font-size:12px;font-weight:700;color:var(--accent)">' + (it.rev>0?it.rev.toFixed(0)+'만':'') + '</div>'
+      + '<div style="font-size:10px;color:var(--green)">' + (it.margin>0?'마진 '+it.margin.toFixed(0)+'만':'') + '</div>'
+      + '</div>'
+      + '</div>';
+  }).join('') : '<div style="text-align:center;padding:20px;color:var(--text2);font-size:13px;">해당 기간 완료 내역 없음</div>';
+
+  document.getElementById('salesList').innerHTML = listHtml;
 }
 
 function statsGoToDate(ds) {
@@ -2645,9 +2825,12 @@ function renderStats() {
 
   // 요약
   const paidRev = paid.reduce((s,j) => s+j.revenue, 0);
+  const paidMargin = paid.reduce((s,j) => s+(j.margin||0), 0);
   const unpaidRev = unpaid.reduce((s,j) => s+j.revenue, 0);
   document.getElementById('statsPaidCnt').textContent = paid.length + '건';
   document.getElementById('statsPaidRev').textContent = paidRev.toFixed(1) + '만원';
+  const marginEl = document.getElementById('statsPaidMargin');
+  if (marginEl) marginEl.textContent = '마진 ' + paidMargin.toFixed(1) + '만원';
   document.getElementById('statsUnpaidCnt').textContent = unpaid.length + '건';
   document.getElementById('statsUnpaidRev').textContent = unpaidRev.toFixed(1) + '만원';
 
