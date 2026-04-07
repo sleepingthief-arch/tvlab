@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 23:03</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 23:27</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -2400,7 +2400,21 @@ function togChip(id) {
     updateGroupChipState();
     upSelList(); upPv();
   } else {
-    const it = ALL_ITEMS.find(i => i.id === id);
+    // ALL_ITEMS 우선, 없으면 getActiveItems에서 직접 탐색
+    let it = ALL_ITEMS.find(i => i.id === id);
+    if (!it) {
+      const src2 = getActiveItems();
+      for (const cat of ['tv','br','ex','ck','cn']) {
+        for (const item of (src2[cat]||[])) {
+          if (item.id === id) { it = item; break; }
+          if (item.groupItems) {
+            const gi = item.groupItems.find(g => g.id === id);
+            if (gi) { it = gi; break; }
+          }
+        }
+        if (it) break;
+      }
+    }
     if (!it) return;
     if (it.colors && it.colors.length > 1) {
       openColorSelect(id, it);
@@ -3517,18 +3531,16 @@ async function loadCustomItems() {
 
 function rebuildAllItems() {
   const src = getActiveItems();
-  // ALL_ITEMS 재구성
   ALL_ITEMS = [];
   ['tv','br','ex','ck','cn'].forEach(cat => {
     (src[cat] || []).forEach(it => {
       if (it.groupItems) {
-        it.groupItems.forEach(gi => ALL_ITEMS.push({...gi}));
+        it.groupItems.forEach(gi => ALL_ITEMS.push(Object.assign({}, gi)));
       } else {
-        ALL_ITEMS.push({...it});
+        ALL_ITEMS.push(Object.assign({}, it));
       }
     });
   });
-  // 그리드 재구성 (커스텀 아이템 반영)
   buildGrids();
 }
 
@@ -3610,10 +3622,21 @@ function updateItem(el) {
 }
 
 function addItem(cat) {
-  if (!customItems) customItems = JSON.parse(JSON.stringify(ITEMS));
-  const newItem = { id: 'custom_'+Date.now(), n: '새 상품', s: '', def: 0, cost: 0 };
+  if (!customItems) {
+    customItems = JSON.parse(JSON.stringify(ITEMS));
+  }
+  if (!customItems[cat]) customItems[cat] = [];
+  const newItem = { id: 'custom_' + Date.now(), n: '새 상품', s: '', def: 0, cost: 0 };
   customItems[cat].push(newItem);
   renderSettingsBody();
+  // 새로 추가된 행으로 스크롤
+  setTimeout(function() {
+    const rows = document.querySelectorAll('.item-row');
+    if (rows.length) rows[rows.length-1].scrollIntoView({ behavior:'smooth', block:'center' });
+    const lastInp = document.querySelectorAll('.item-name-inp');
+    if (lastInp.length) lastInp[lastInp.length-1].focus();
+  }, 100);
+  showToast('추가됐어요! 이름/금액 입력 후 저장하기 눌러주세요');
 }
 
 function deleteItem(btn) {
@@ -3658,16 +3681,18 @@ function collectSettingsData() {
 
 async function saveSettings() {
   collectSettingsData();
-  // localStorage 저장
+  // localStorage에 즉시 저장
   localStorage.setItem('tvlab_custom_items', JSON.stringify(customItems));
-  // Firebase 저장
+  // Firebase 저장 (비동기)
   try {
     if (db) await db.collection('settings').doc('items').set({ items: customItems });
   } catch(e) { console.warn('Firebase 저장 실패:', e); }
+  // ALL_ITEMS + 그리드 완전 재구성
   rebuildAllItems();
-  showToast('상품 설정 저장됐어요! 😊');
+  buildGrids();
+  showToast('저장됐어요! 시공 등록에 반영됐어요 😊');
   toggleSettings();
-  setView('day');
+  setView(curView || 'day');
 }
 
 function resetSettings() {
