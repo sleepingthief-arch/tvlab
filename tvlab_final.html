@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 17:23</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 17:30</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1062,8 +1062,17 @@ function openMat() {
   const matCount = {};
   // 시계, 브라켓 카테고리만
   const src = getActiveItems();
-  const ckIds = new Set((src.ck||[]).map(i=>i.id));
-  const brIds = new Set((src.br||[]).map(i=>i.id));
+  // groupItems 포함해서 id 수집
+  function collectIds(items) {
+    const ids = new Set();
+    (items||[]).forEach(it => {
+      ids.add(it.id);
+      if (it.groupItems) it.groupItems.forEach(gi => ids.add(gi.id));
+    });
+    return ids;
+  }
+  const ckIds = collectIds(src.ck);
+  const brIds = collectIds(src.br);
 
   // 자재명에서 공통키 추출 (55e, 70e, 70p, 상하좌우 등)
   function matKey(name) {
