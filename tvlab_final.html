@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 13:54</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/07 14:08</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1020,6 +1020,24 @@ function saveMatMemo(val) {
 function closeMat() {
   document.getElementById('matModal').classList.remove('show');
   document.body.style.overflow = '';
+}
+
+function searchGoToItem(ds, id) {
+  // 검색창 닫기
+  clearHdrSearch();
+  const res = document.getElementById('searchRes');
+  if (res) res.style.display = 'none';
+  // 날짜 이동 + 카드 펼치기 (statsGoToItem과 동일)
+  Object.keys(expandedState).forEach(k => { expandedState[k] = false; });
+  setDate(ds);
+  setView('day');
+  if (id) {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        statsExpandCard(id);
+      });
+    });
+  }
 }
 
 function manualRefresh() {
@@ -2345,7 +2363,7 @@ function doSearch(q) {
       const dong = (sv.dong!==undefined ? sv.dong : s.dong||'').toLowerCase();
       const memo = (s.memo||'').toLowerCase();
       if (ph.includes(qc)||title.includes(q.toLowerCase())||dong.includes(q.toLowerCase())||memo.includes(q.toLowerCase())) {
-        results.push({ ds, title:s.title, dong:sv.dong!==undefined?sv.dong:s.dong||'', time:s.time, phone:sv.phone||s.phone||'', status:sv.status||'sched' });
+        results.push({ ds, id:'b_'+i, title:s.title, dong:sv.dong!==undefined?sv.dong:s.dong||'', time:s.time, phone:sv.phone||s.phone||'', status:sv.status||'sched' });
       }
     });
   });
@@ -2357,7 +2375,7 @@ function doSearch(q) {
       const ph = (j.phone||'').replace(/[^0-9]/g,'');
       const jmemo = (j.memo||j.userMemo||'').toLowerCase();
       if (ph.includes(qc)||(j.title||'').toLowerCase().includes(q.toLowerCase())||(j.dong||'').toLowerCase().includes(q.toLowerCase())||jmemo.includes(q.toLowerCase())) {
-        results.push({ ds, title:j.title, dong:j.dong||'', time:j.time||'', phone:j.phone||'', status:j.status||'sched' });
+        results.push({ ds, id:j.id, title:j.title, dong:j.dong||'', time:j.time||'', phone:j.phone||'', status:j.status||'sched' });
       }
     });
   }
@@ -2369,7 +2387,9 @@ function doSearch(q) {
     const dateStr = `${d.getMonth()+1}/${d.getDate()} ${r.time||''}`;
     const dongTxt = r.dong ? ` (${r.dong})` : '';
     const stIcon = r.status==='done'||r.status==='paid'?'✅':'📅';
-    return `<div class="jcard" style="margin-bottom:8px;cursor:pointer" onclick="calClick('${r.ds}')">
+    return `<div class="jcard" style="margin-bottom:8px;cursor:pointer"
+      data-ds="${r.ds}" data-id="${r.id||''}"
+      onclick="searchGoToItem(this.dataset.ds, this.dataset.id)">
       <div style="display:flex;justify-content:space-between;margin-bottom:4px">
         <span style="font-size:12px;font-weight:700;color:var(--yellow)">${dateStr}</span>
         <span>${stIcon}</span>
@@ -2466,14 +2486,23 @@ function _doExpandCard(id, card, body) {
   body.classList.add('expanded');
   expandedState[id] = true;
 
-  // 스크롤
-  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-  // 흔들기
+  // 흔들기 먼저
   setTimeout(() => {
     card.classList.add('shake');
     setTimeout(() => card.classList.remove('shake'), 600);
   }, 200);
+
+  // 펼쳐진 후 카드 전체가 보이도록 스크롤
+  setTimeout(() => {
+    const rect = card.getBoundingClientRect();
+    const viewH = window.innerHeight;
+    // 카드 하단이 화면 밖으로 나갔으면 스크롤
+    if (rect.bottom > viewH - 20) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else if (rect.top < 120) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, 350);
 }
 
 function toggleStatCard(uid) {
