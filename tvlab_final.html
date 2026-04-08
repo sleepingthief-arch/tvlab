@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/08 14:31</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/08 14:42</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1268,8 +1268,7 @@ function openTimeline() {
     html += '<div style="position:absolute;left:44px;right:4px;top:' + top + 'px;height:1px;background:var(--border);"></div>';
   }
 
-    // ── Overlapping Logic ──
-  // 시작/끝(분) 계산
+    // ── Overlapping Logic (2-pass) ──
   blocks.forEach(function(b) {
     b.startMin = b.startH * 60 + b.startM;
     b.endMin   = b.startMin + b.dur;
@@ -1277,23 +1276,34 @@ function openTimeline() {
     b.totalCols = 1;
   });
 
-  // 각 블록에 column 배정 (겹치면 옆으로)
+  // 1패스: col 배정
   for (var bi = 0; bi < blocks.length; bi++) {
     var cur = blocks[bi];
-    // 현재 블록과 겹치는 것들
-    var overlaps = blocks.filter(function(x, xi) {
-      return xi !== bi && cur.startMin < x.endMin && cur.endMin > x.startMin;
-    });
-    // 이미 배정된 col 수집
-    var usedCols = overlaps.filter(function(x){ return x.col >= 0; }).map(function(x){ return x.col; });
-    // 가장 작은 빈 col 배정
+    var usedCols = [];
+    for (var bj = 0; bj < bi; bj++) {
+      var other = blocks[bj];
+      if (cur.startMin < other.endMin && cur.endMin > other.startMin) {
+        usedCols.push(other.col);
+      }
+    }
     var col = 0;
     while (usedCols.indexOf(col) >= 0) col++;
     cur.col = col;
-    // 겹치는 그룹 전체의 totalCols 업데이트
-    var allInGroup = overlaps.concat([cur]);
-    var maxCol = allInGroup.reduce(function(m, x){ return Math.max(m, x.col >= 0 ? x.col : 0); }, 0);
-    allInGroup.forEach(function(x){ if (maxCol + 1 > x.totalCols) x.totalCols = maxCol + 1; });
+  }
+
+  // 2패스: 겹치는 그룹의 totalCols 결정 (그룹 내 최대 col+1)
+  for (var bi = 0; bi < blocks.length; bi++) {
+    var cur = blocks[bi];
+    var groupCols = [cur.col];
+    for (var bj = 0; bj < blocks.length; bj++) {
+      if (bi === bj) continue;
+      var other = blocks[bj];
+      if (cur.startMin < other.endMin && cur.endMin > other.startMin) {
+        groupCols.push(other.col);
+      }
+    }
+    var totalCols = Math.max.apply(null, groupCols) + 1;
+    cur.totalCols = totalCols;
   }
 
   // 블록 렌더
