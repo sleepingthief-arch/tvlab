@@ -390,7 +390,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/08 23:34</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/08 23:37</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1371,21 +1371,21 @@ function renderTimeline(ds) {
   if (!blocks.length) html = '<div style="text-align:center;padding:30px;color:var(--text2);">일정이 없어요 😊</div>';
 
   document.getElementById('timelineBody').innerHTML = html;
-  // 렌더 후 실제 컨테이너 너비로 블록 위치 재계산
-  requestAnimationFrame(function() {
+  function applyTlLayout() {
     var grid = document.getElementById('tlGrid');
     if (!grid) return;
-    var gridW = grid.offsetWidth;
-    var avail = gridW - 44 - 4; // 눈금44 + 우여백4
-    grid.querySelectorAll('[data-tlblock]').forEach(function(el) {
-      var col = parseInt(el.dataset.col);
+    var avail = grid.offsetWidth - 44 - 4;
+    if (avail <= 10) { setTimeout(applyTlLayout, 60); return; }
+    grid.querySelectorAll('[data-tlb]').forEach(function(el) {
+      var col   = parseInt(el.dataset.col);
       var total = parseInt(el.dataset.totalcols);
-      var colW = Math.floor((avail - (total-1)*H_GAP) / total);
-      var left = 44 + col * (colW + H_GAP);
-      el.style.left = left + 'px';
+      var colW  = Math.floor((avail - (total - 1) * H_GAP) / total);
+      var leftPx = 44 + col * (colW + H_GAP);
+      el.style.left  = leftPx + 'px';
       el.style.width = colW + 'px';
     });
-  });
+  }
+  setTimeout(applyTlLayout, 60);
 }
 
 function closeTimeline() {
