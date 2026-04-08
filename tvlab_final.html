@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/08 11:09</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/08 14:31</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1268,45 +1268,59 @@ function openTimeline() {
     html += '<div style="position:absolute;left:44px;right:4px;top:' + top + 'px;height:1px;background:var(--border);"></div>';
   }
 
-  // 레인 배정 - 겹치는 일정은 옆으로 나란히
-  var lanes = []; // 각 레인의 마지막 종료시간(분)
+    // ── Overlapping Logic ──
+  // 시작/끝(분) 계산
   blocks.forEach(function(b) {
-    var startMin = b.startH * 60 + b.startM;
-    var endMin = startMin + b.dur;
-    var lane = 0;
-    for (var l = 0; l < lanes.length; l++) {
-      if (lanes[l] <= startMin) { lane = l; break; }
-      lane = l + 1;
-    }
-    lanes[lane] = endMin;
-    b.lane = lane;
+    b.startMin = b.startH * 60 + b.startM;
+    b.endMin   = b.startMin + b.dur;
+    b.col = -1;
+    b.totalCols = 1;
   });
-  var numLanes = Math.max(1, lanes.length);
-  var laneW = Math.floor(100 / numLanes);
 
-  // 일정 블록
-  blocks.forEach(function(b, i) {
-    var top = ((b.startH + b.startM / 60 - minH) / totalH) * timelineH;
-    var height = Math.max(32, (b.dur / 60 / totalH) * timelineH);
+  // 각 블록에 column 배정 (겹치면 옆으로)
+  for (var bi = 0; bi < blocks.length; bi++) {
+    var cur = blocks[bi];
+    // 현재 블록과 겹치는 것들
+    var overlaps = blocks.filter(function(x, xi) {
+      return xi !== bi && cur.startMin < x.endMin && cur.endMin > x.startMin;
+    });
+    // 이미 배정된 col 수집
+    var usedCols = overlaps.filter(function(x){ return x.col >= 0; }).map(function(x){ return x.col; });
+    // 가장 작은 빈 col 배정
+    var col = 0;
+    while (usedCols.indexOf(col) >= 0) col++;
+    cur.col = col;
+    // 겹치는 그룹 전체의 totalCols 업데이트
+    var allInGroup = overlaps.concat([cur]);
+    var maxCol = allInGroup.reduce(function(m, x){ return Math.max(m, x.col >= 0 ? x.col : 0); }, 0);
+    allInGroup.forEach(function(x){ if (maxCol + 1 > x.totalCols) x.totalCols = maxCol + 1; });
+  }
+
+  // 블록 렌더
+  blocks.forEach(function(b) {
+    var top    = ((b.startH + b.startM / 60 - minH) / totalH) * timelineH;
+    var height = Math.max(36, (b.dur / 60 / totalH) * timelineH);
     var endStr = b.endH + ':' + (b.endMm < 10 ? '0' : '') + b.endMm;
     var timeStr = (b.j.time || '?') + '~' + endStr;
     var status = b.j.status;
-    var icon = status === 'paid' ? '💳' : status === 'done' ? '✅' : '📋';
-    var leftPct  = 48 + b.lane * laneW * 2.2; // px 기반 간격
-    var widthPct = laneW * 2.0;
-    // 픽셀로 계산 (컨테이너 고정폭 기준 아님 → % 대신 고정값)
-    var blockLeft  = 'calc(' + (b.lane * (100/numLanes)) + '% + 48px)';
-    var blockRight = 'calc(' + ((numLanes - b.lane - 1) * (100/numLanes)) + '% + 4px)';
-    html += '<div style="position:absolute;left:' + blockLeft + ';right:' + blockRight + ';top:' + top + 'px;height:' + height + 'px;background:' + b.color + ';border-radius:6px;padding:4px 7px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.2);">'
+    var icon   = status === 'paid' ? '💳' : status === 'done' ? '✅' : '📋';
+    var colPct = 100 / b.totalCols;
+    var leftPx = 'calc(' + (b.col * colPct).toFixed(1) + '% + 48px)';
+    var rightPx= 'calc(' + ((b.totalCols - b.col - 1) * colPct).toFixed(1) + '% + 4px)';
+    html += '<div data-jid="' + b.j.id + '"'
+      + ' onclick="timelineGoToItem(\'' + curDate + '\', this.dataset.jid)"'
+      + ' style="position:absolute;left:' + leftPx + ';right:' + rightPx + ';top:' + top + 'px;height:' + height + 'px;'
+      + 'background:' + b.color + ';border-radius:6px;padding:4px 7px;overflow:hidden;'
+      + 'box-shadow:0 2px 6px rgba(0,0,0,.18);cursor:pointer;">'
       + '<div style="font-size:10px;color:#fff;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + icon + ' ' + b.j.title + '</div>'
-      + '<div style="font-size:9px;color:rgba(255,255,255,.85);margin-top:1px;">' + timeStr + ' (' + b.dur + '분)' + '</div>'
-      + (b.j.dong && height > 44 ? '<div style="font-size:9px;color:rgba(255,255,255,.7);">' + b.j.dong + '</div>' : '')
+      + '<div style="font-size:9px;color:rgba(255,255,255,.85);margin-top:1px;">' + timeStr + ' (' + b.dur + '분)</div>'
+      + (b.j.dong && height > 46 ? '<div style="font-size:9px;color:rgba(255,255,255,.7);">' + b.j.dong + '</div>' : '')
       + '</div>';
   });
 
   html += '</div>';
 
-  // 범례
+    // 범례
   html += '<div style="display:flex;flex-direction:column;gap:4px;">';
   blocks.forEach(function(b) {
     var status = b.j.status;
@@ -1328,6 +1342,18 @@ function openTimeline() {
 function closeTimeline() {
   document.getElementById('timelineModal').classList.remove('show');
   document.body.style.overflow = '';
+}
+
+function timelineGoToItem(ds, id) {
+  closeTimeline();
+  Object.keys(expandedState).forEach(function(k){ expandedState[k] = false; });
+  setDate(ds);
+  setView('day');
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      statsExpandCard(id);
+    });
+  });
 }
 
 function openBlog() {
