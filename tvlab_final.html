@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/08 14:42</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/08 14:53</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -461,13 +461,15 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
 
 <!-- 타임라인 모달 -->
 <div class="mat-modal" id="timelineModal" onclick="if(event.target===this)closeTimeline()">
-  <div class="mat-box" style="max-height:80vh;">
+  <div class="mat-box" style="max-height:80vh;" id="timelineBox">
     <div class="mat-handle"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div class="mat-hd" id="timelineTitle">⏱️ 시간 배분</div>
-      <button onclick="closeTimeline()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">✕</button>
+      <button onclick="tlSwipe(-1)" style="background:none;border:none;color:var(--accent);font-size:20px;cursor:pointer;padding:4px 10px;">◀</button>
+      <div class="mat-hd" id="timelineTitle" style="flex:1;text-align:center;">⏱️ 시간 배분</div>
+      <button onclick="tlSwipe(1)" style="background:none;border:none;color:var(--accent);font-size:20px;cursor:pointer;padding:4px 10px;">▶</button>
+      <button onclick="closeTimeline()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:4px 8px;">✕</button>
     </div>
-    <div id="timelineBody" style="overflow-y:auto;"></div>
+    <div id="timelineBody" style="overflow-y:auto;transition:opacity .2s;"></div>
   </div>
 </div>
 
@@ -1221,9 +1223,30 @@ function searchGoToItem(ds, id) {
   }
 }
 
-function openTimeline() {
-  var all = getAllItems().filter(function(j){ return !j.deleted; });
-  var d = new Date(curDate + 'T00:00:00');
+var tlDate = ''; // 타임라인 현재 날짜 (스와이프용)
+
+function openTimeline(ds) {
+  tlDate = ds || curDate;
+  renderTimeline(tlDate);
+  document.getElementById('timelineModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function renderTimeline(ds) {
+  tlDate = ds;
+  var savedJobs = JSON.parse(localStorage.getItem('tvl_' + ds) || '{}');
+  var baseItems = BASE[ds] || [];
+  var allItems = [];
+  baseItems.forEach(function(s, i) {
+    var sv = savedJobs['b_'+i] || {};
+    if (sv.deleted) return;
+    allItems.push(Object.assign({}, s, sv, { id: 'b_'+i }));
+  });
+  Object.values(savedJobs).filter(function(j){ return j.id && !j.id.startsWith('b_') && !j.deleted; })
+    .forEach(function(j){ allItems.push(j); });
+  var all = allItems.sort(function(a,b){ return (a.time||'') > (b.time||'') ? 1 : -1; });
+
+  var d = new Date(ds + 'T00:00:00');
   document.getElementById('timelineTitle').textContent =
     '⏱️ ' + (d.getMonth()+1) + '/' + d.getDate() + ' 시간 배분';
 
@@ -1345,8 +1368,6 @@ function openTimeline() {
   if (!blocks.length) html = '<div style="text-align:center;padding:30px;color:var(--text2);">일정이 없어요 😊</div>';
 
   document.getElementById('timelineBody').innerHTML = html;
-  document.getElementById('timelineModal').classList.add('show');
-  document.body.style.overflow = 'hidden';
 }
 
 function closeTimeline() {
@@ -1365,6 +1386,35 @@ function timelineGoToItem(ds, id) {
     });
   });
 }
+
+function tlSwipe(dir) {
+  var d = new Date(tlDate + 'T00:00:00');
+  d.setDate(d.getDate() + dir);
+  var newDs = fmtDate(d);
+  var body = document.getElementById('timelineBody');
+  body.style.opacity = '0';
+  setTimeout(function() {
+    renderTimeline(newDs);
+    body.style.opacity = '1';
+  }, 180);
+}
+
+// 타임라인 터치 스와이프
+(function() {
+  var tlTouchX = 0;
+  document.addEventListener('touchstart', function(e) {
+    var modal = document.getElementById('timelineModal');
+    if (modal && modal.classList.contains('show')) {
+      tlTouchX = e.touches[0].clientX;
+    }
+  }, {passive:true});
+  document.addEventListener('touchend', function(e) {
+    var modal = document.getElementById('timelineModal');
+    if (!modal || !modal.classList.contains('show')) return;
+    var dx = e.changedTouches[0].clientX - tlTouchX;
+    if (Math.abs(dx) > 60) tlSwipe(dx < 0 ? 1 : -1);
+  }, {passive:true});
+})();
 
 function openBlog() {
   var NL = String.fromCharCode(10);
