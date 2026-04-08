@@ -390,7 +390,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/08 15:39</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/08 15:47</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1284,14 +1284,14 @@ function renderTimeline(ds) {
 
   var totalH = maxH - minH;
   var timelineH = Math.max(300, totalH * 50);
-  var html = '<div style="position:relative;background:var(--card2);border-radius:10px;padding:0 0 8px 44px;min-height:' + timelineH + 'px;margin-bottom:12px;">';
+  var LABEL_W = 44; // 시간 눈금 너비
+  var html = '<div id="tlGrid" style="position:relative;background:var(--card2);border-radius:10px;padding:0 4px 8px 0;min-height:' + timelineH + 'px;margin-bottom:12px;">';
 
-  // 시간 눈금
+  // 시간 눈금 (절대좌표)
   for (var h = minH; h <= maxH; h++) {
-    var pct = ((h - minH) / totalH) * 100;
     var top = (h - minH) * 50;
-    html += '<div style="position:absolute;left:0;top:' + top + 'px;width:40px;font-size:10px;color:var(--text2);text-align:right;line-height:1;">' + h + '시</div>';
-    html += '<div style="position:absolute;left:44px;right:4px;top:' + top + 'px;height:1px;background:var(--border);"></div>';
+    html += '<div style="position:absolute;left:0;top:' + top + 'px;width:' + LABEL_W + 'px;font-size:10px;color:var(--text2);text-align:right;padding-right:4px;line-height:1;box-sizing:border-box;">' + h + '시</div>';
+    html += '<div style="position:absolute;left:' + LABEL_W + 'px;right:4px;top:' + top + 'px;height:1px;background:var(--border);"></div>';
   }
 
     // ── Overlapping Logic (2-pass) ──
@@ -1373,6 +1373,21 @@ function renderTimeline(ds) {
   if (!blocks.length) html = '<div style="text-align:center;padding:30px;color:var(--text2);">일정이 없어요 😊</div>';
 
   document.getElementById('timelineBody').innerHTML = html;
+  // 렌더 후 실제 컨테이너 너비로 블록 위치 재계산
+  requestAnimationFrame(function() {
+    var grid = document.getElementById('tlGrid');
+    if (!grid) return;
+    var gridW = grid.offsetWidth;
+    var avail = gridW - 44 - 4; // 눈금44 + 우여백4
+    grid.querySelectorAll('[data-tlblock]').forEach(function(el) {
+      var col = parseInt(el.dataset.col);
+      var total = parseInt(el.dataset.totalcols);
+      var colW = Math.floor((avail - (total-1)*H_GAP) / total);
+      var left = 44 + col * (colW + H_GAP);
+      el.style.left = left + 'px';
+      el.style.width = colW + 'px';
+    });
+  });
 }
 
 function closeTimeline() {
