@@ -387,7 +387,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/08 08:58</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/08 11:09</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1800,6 +1800,7 @@ function getAllItems() {
       cardColor: sv.cardColor || '',
       expanded: expandedState['b_'+i] || false,
       smsSent: sv.smsSent || false,
+      duration: sv.duration || 60,
     });
   });
   // 사용자 추가 일정
@@ -2172,6 +2173,8 @@ function openAdd() {
   document.getElementById('fPhone').value = '';
   document.getElementById('fDate').value = curDate;
   document.getElementById('fTime').value = '09:00';
+  const durElA = document.getElementById('durSelect');
+  if (durElA) durElA.value = '60';
   document.getElementById('fMemo').value = '';
   document.getElementById('parsePreview').style.display = 'none';
   parsedData = {};
@@ -2205,6 +2208,8 @@ function openEdit(id) {
   document.getElementById('fPhone').value = j.phone || '';
   document.getElementById('fDate').value = curDate;
   document.getElementById('fTime').value = j.time || '09:00';
+  const durEl2 = document.getElementById('durSelect');
+  if (durEl2) durEl2.value = String(j.duration || 60);
   document.getElementById('fMemo').value = j.userMemo || '';  // 원본메모는 별도 표시
   document.getElementById('dCoupon').value = j.discounts?.coupon || '';
   document.getElementById('dReview').value = j.discounts?.review || '';
@@ -2278,11 +2283,15 @@ function saveJob() {
   const prev = jobs[editingId] || {};
 
   // 새 일정 객체
+  const durEl = document.getElementById('durSelect');
+  const duration = durEl ? (parseInt(durEl.value) || 60) : 60;
+
   const newJob = {
     title: name,
     dong: document.getElementById('fDong').value.trim(),
     phone: document.getElementById('fPhone').value.trim(),
     time: document.getElementById('fTime').value,
+    duration,
     items,
     discounts: {
       coupon: getDisc('dCoupon'),
