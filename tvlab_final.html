@@ -390,7 +390,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/09 02:13</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/09 02:33</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1177,10 +1177,16 @@ function openMat() {
     (j.items||[]).forEach(it => {
       if (ckIds.has(it.id) || brIds.has(it.id)) {
         const key = matKey(it.n);
-        // ×N 수량 파싱
         const qm = it.n.match(/×(\d+)/);
         const qty = qm ? parseInt(qm[1]) : 1;
         matCount[key] = (matCount[key]||0) + qty;
+      }
+      // 특수무타공(가벽/일반) → 다개용콘센트 자동 추가
+      const nm = it.n || '';
+      if (nm.includes('특수무타공') || nm.includes('특무') || nm.includes('가벽특무')) {
+        const qm2 = nm.match(/×(\d+)/);
+        const qty2 = qm2 ? parseInt(qm2[1]) : 1;
+        matCount['다개용콘센트'] = (matCount['다개용콘센트']||0) + qty2;
       }
     });
   });
