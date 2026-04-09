@@ -390,7 +390,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/08 23:37</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/09 02:13</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -695,6 +695,14 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
         <button onclick="setSalesRange('week')" style="background:var(--card);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;">이번주</button>
         <button onclick="setSalesRange('all')" style="background:var(--card);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;">전체</button>
         <button onclick="renderSalesTab()" style="background:var(--green);color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;">조회</button>
+      </div>
+      <!-- 키워드 검색 -->
+      <div style="display:flex;gap:6px;margin-top:8px;align-items:center;">
+        <input type="text" id="salesKeyword" placeholder="키워드 검색 (예: 운정)" 
+          style="flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:inherit;"
+          oninput="renderSalesTab()">
+        <button onclick="document.getElementById('salesKeyword').value='';renderSalesTab();" 
+          style="background:var(--card2);border:1px solid var(--border);color:var(--text2);padding:7px 10px;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;">✕</button>
       </div>
     </div>
     <!-- 요약 카드 -->
@@ -1904,6 +1912,7 @@ function getAllItems() {
       cardColor: sv.cardColor || '',
       expanded: expandedState['b_'+i] || false,
       smsSent: sv.smsSent || false,
+      smsBank: sv.smsBank || '',
       duration: sv.duration || 60,
     });
   });
@@ -2773,6 +2782,7 @@ function clearTslot() { document.querySelectorAll('.tslot').forEach(s => s.class
 // SMS
 // ════════════════════════════════════════════
 let curSmsId = null;
+let curSmsTab = 1; // 1=기업은행, 2=농협
 
 function openSms(id, date) {
   // date가 있으면 해당 날짜에서 찾기 (통계 모달에서 호출 시)
@@ -2829,6 +2839,7 @@ function openSms(id, date) {
 }
 
 function selectSmsTab(n) {
+  curSmsTab = n;
   const t1 = document.getElementById('smsTab1');
   const t2 = document.getElementById('smsTab2');
   if (n === 1) {
@@ -2847,9 +2858,9 @@ function markSmsSent(id) {
   if (!id) return;
   if (!jobs[id]) jobs[id] = { id, status: 'done' };
   jobs[id].smsSent = true;
+  jobs[id].smsBank = curSmsTab === 1 ? '기업' : '농협'; // 발송 계좌 저장
   saveJobs();
   renderDay();
-  // 통계도 갱신
   if (document.getElementById('ovStats').classList.contains('show')) renderStats();
 }
 
@@ -3014,6 +3025,8 @@ function renderSalesTab() {
 
   const fromD = new Date(fromVal+'T00:00:00');
   const toD = new Date(toVal+'T23:59:59');
+  const kwEl = document.getElementById('salesKeyword');
+  const kw = kwEl ? kwEl.value.trim().toLowerCase() : '';
 
   let totalRev = 0, totalCost = 0, totalMargin = 0, totalCnt = 0;
   const items = [];
@@ -3028,21 +3041,25 @@ function renderSalesTab() {
       if (sv.deleted) return;
       const status = sv.status || 'sched';
       if (status === 'done' || status === 'paid') {
+        const title = sv.title || s.title || '';
+        if (kw && !title.toLowerCase().includes(kw)) return;
         const rev = sv.revenue || 0;
         const cost = sv.cost || 0;
         const margin = sv.margin || 0;
         totalRev += rev; totalCost += cost; totalMargin += margin; totalCnt++;
-        items.push({ ds, title: s.title, rev, cost, margin, status });
+        items.push({ ds, title, rev, cost, margin, status });
       }
     });
     // 사용자 추가 일정
     Object.values(uJ).filter(j => j.id && !j.id.startsWith('b_') && !j.deleted).forEach(j => {
       if (j.status === 'done' || j.status === 'paid') {
+        const jTitle = j.title || '';
+        if (kw && !jTitle.toLowerCase().includes(kw)) return;
         const rev = j.revenue || 0;
         const cost = j.cost || 0;
         const margin = j.margin || 0;
         totalRev += rev; totalCost += cost; totalMargin += margin; totalCnt++;
-        items.push({ ds, title: j.title||'', rev, cost, margin, status: j.status });
+        items.push({ ds, title: jTitle, rev, cost, margin, status: j.status });
       }
     });
   });
@@ -3300,8 +3317,9 @@ function renderStats() {
     ? unpaid.map((j, idx) => {
         const d = new Date(j.date+'T00:00:00');
         const dateStr = (d.getMonth()+1)+'/'+(d.getDate());
+        const bankLabel = j.smsBank ? j.smsBank : '';
         const sentBadge = j.smsSent
-          ? '<span style="font-size:10px;color:#66bb6a;margin-left:4px;">📨발송</span>'
+          ? '<span style="font-size:10px;color:#66bb6a;margin-left:4px;">📨' + bankLabel + '</span>'
           : '';
         const smsBtnLabel = j.smsSent ? '📋 재발송' : '📋 비용안내';
         const smsBtnStyle = j.smsSent
