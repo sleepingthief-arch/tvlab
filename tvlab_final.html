@@ -390,7 +390,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/09 02:33</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/09 02:40</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1188,6 +1188,13 @@ function openMat() {
         const qty2 = qm2 ? parseInt(qm2[1]) : 1;
         matCount['다개용콘센트'] = (matCount['다개용콘센트']||0) + qty2;
       }
+      // 콘센트류(아트콘/베란다콘/주방콘/콘센트) → 2구콘센트 자동 추가
+      const cnIds = new Set(['ac','vc','kc','cn1']);
+      if (cnIds.has(it.id)) {
+        const qm3 = nm.match(/×(\d+)/);
+        const qty3 = qm3 ? parseInt(qm3[1]) : 1;
+        matCount['2구콘센트'] = (matCount['2구콘센트']||0) + qty3;
+      }
     });
   });
 
@@ -1199,9 +1206,16 @@ function openMat() {
   if (!entries.length) {
     list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:13px;">자재 없음 😊</div>';
   } else {
-    list.innerHTML = entries.map(([n,cnt]) =>
-      '<div class="mat-item"><span class="mat-name">'+n+'</span><span class="mat-cnt">×'+cnt+'</span></div>'
-    ).join('');
+    const checkedKey = 'matCheck_' + curDate;
+    const checked = JSON.parse(localStorage.getItem(checkedKey) || '{}');
+    list.innerHTML = entries.map(([n,cnt]) => {
+      const isChecked = checked[n] || false;
+      return '<div class="mat-item" onclick="toggleMatCheck(\'' + n.replace(/'/g,"\\'") + '\',\'' + curDate + '\')" style="cursor:pointer;opacity:' + (isChecked?'.45':'1') + ';transition:opacity .2s;">'
+        + '<span style="font-size:16px;margin-right:8px;flex-shrink:0;">' + (isChecked ? '✅' : '⬜') + '</span>'
+        + '<span class="mat-name" style="' + (isChecked?'text-decoration:line-through;':'') + '">' + n + '</span>'
+        + '<span class="mat-cnt">×' + cnt + '</span>'
+        + '</div>';
+    }).join('');
   }
   // 메모 불러오기
   const memoKey = 'matMemo_' + curDate;
@@ -1215,6 +1229,24 @@ function openMat() {
 function saveMatMemo(val) {
   const memoKey = 'matMemo_' + curDate;
   localStorage.setItem(memoKey, val);
+}
+
+function toggleMatCheck(name, ds) {
+  const key = 'matCheck_' + ds;
+  const checked = JSON.parse(localStorage.getItem(key) || '{}');
+  checked[name] = !checked[name];
+  localStorage.setItem(key, JSON.stringify(checked));
+  // 해당 항목만 업데이트
+  const items = document.querySelectorAll('.mat-item');
+  items.forEach(el => {
+    const nameEl = el.querySelector('.mat-name');
+    if (!nameEl || nameEl.textContent !== name) return;
+    const isChecked = checked[name];
+    el.style.opacity = isChecked ? '.45' : '1';
+    nameEl.style.textDecoration = isChecked ? 'line-through' : '';
+    const icon = el.querySelector('span:first-child');
+    if (icon) icon.textContent = isChecked ? '✅' : '⬜';
+  });
 }
 
 function closeMat() {
