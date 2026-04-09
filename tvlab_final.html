@@ -390,7 +390,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/09 02:40</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/09 02:50</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1158,10 +1158,19 @@ function openMat() {
   }
   const ckIds = collectIds(src.ck);
   const brIds = collectIds(src.br);
+  const cnIds = collectIds(src.cn); // 콘센트 전체 (커스텀 포함)
 
-  // 자재명에서 공통키 추출 (55e, 70e, 70p, 상하좌우 등)
+  // 카테고리별 id→cat 역방향 맵 생성 (커스텀 추가 항목도 포함)
+  const idToCat = {};
+  ['tv','br','ex','ck','cn'].forEach(cat => {
+    (src[cat]||[]).forEach(it => {
+      idToCat[it.id] = cat;
+      if (it.groupItems) it.groupItems.forEach(gi => { idToCat[gi.id] = cat; });
+    });
+  });
+
+  // 자재명에서 공통키 추출
   function matKey(name) {
-    // ×N 수량 제거 후 키 추출
     const base = name.replace(/\s*×\d+/g,'').trim();
     if (base.includes('55e')) return '55e';
     if (base.includes('70e')) return '70e';
@@ -1172,28 +1181,29 @@ function openMat() {
     if (base.includes('98인치브라켓')) return '98인치브라켓';
     return base;
   }
+
   all.forEach(j => {
     if (j.status === 'done' || j.status === 'paid' || j.deleted) return;
     (j.items||[]).forEach(it => {
-      if (ckIds.has(it.id) || brIds.has(it.id)) {
-        const key = matKey(it.n);
-        const qm = it.n.match(/×(\d+)/);
-        const qty = qm ? parseInt(qm[1]) : 1;
+      const cat = idToCat[it.id] || '';
+      const nm = it.n || '';
+      const qm = nm.match(/×(\d+)/);
+      const qty = qm ? parseInt(qm[1]) : 1;
+
+      // 브라켓/시계 → 자재 표시 (커스텀 추가 포함)
+      if (cat === 'br' || cat === 'ck') {
+        const key = matKey(nm);
         matCount[key] = (matCount[key]||0) + qty;
       }
-      // 특수무타공(가벽/일반) → 다개용콘센트 자동 추가
-      const nm = it.n || '';
+
+      // 특수무타공 → 다개용콘센트
       if (nm.includes('특수무타공') || nm.includes('특무') || nm.includes('가벽특무')) {
-        const qm2 = nm.match(/×(\d+)/);
-        const qty2 = qm2 ? parseInt(qm2[1]) : 1;
-        matCount['다개용콘센트'] = (matCount['다개용콘센트']||0) + qty2;
+        matCount['다개용콘센트'] = (matCount['다개용콘센트']||0) + qty;
       }
-      // 콘센트류(아트콘/베란다콘/주방콘/콘센트) → 2구콘센트 자동 추가
-      const cnIds = new Set(['ac','vc','kc','cn1']);
-      if (cnIds.has(it.id)) {
-        const qm3 = nm.match(/×(\d+)/);
-        const qty3 = qm3 ? parseInt(qm3[1]) : 1;
-        matCount['2구콘센트'] = (matCount['2구콘센트']||0) + qty3;
+
+      // 콘센트 카테고리 전체 → 2구콘센트 (커스텀 추가 포함)
+      if (cat === 'cn') {
+        matCount['2구콘센트'] = (matCount['2구콘센트']||0) + qty;
       }
     });
   });
