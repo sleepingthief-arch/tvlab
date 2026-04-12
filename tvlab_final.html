@@ -391,7 +391,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/12 10:37</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/12 12:04</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -2012,12 +2012,45 @@ let calDragDir = 0;
 let calNextSlide = null;
 
 function initSwipe() {
+  // ── tabsFixed 좌우 스와이프 → extra 탭 열기/닫기 ──
+  (function() {
+    var tsx = 0, tsy = 0, tabMoved = false;
+    var fixed = document.getElementById('tabsFixed');
+    if (!fixed) return;
+    fixed.addEventListener('touchstart', function(e) {
+      tsx = e.touches[0].clientX;
+      tsy = e.touches[0].clientY;
+      tabMoved = false;
+    }, {passive:true});
+    fixed.addEventListener('touchmove', function(e) {
+      var adx = Math.abs(e.touches[0].clientX - tsx);
+      var ady = Math.abs(e.touches[0].clientY - tsy);
+      if (adx > ady && adx > 8) tabMoved = true;
+    }, {passive:true});
+    fixed.addEventListener('touchend', function(e) {
+      if (!tabMoved) return;
+      var dx = e.changedTouches[0].clientX - tsx;
+      var wrap = document.getElementById('tabsWrap');
+      if (!wrap) return;
+      var isOpen = wrap.style.maxHeight === '48px';
+      if (dx < -40 && !isOpen) {
+        wrap.style.maxHeight = '48px';
+        wrap.style.padding = '6px 16px 4px';
+      } else if (dx > 40 && isOpen) {
+        wrap.style.maxHeight = '0px';
+        wrap.style.padding = '0 16px';
+      }
+    }, {passive:true});
+  })();
   // 일별 - document 전체
   document.addEventListener('touchstart', e => {
     const ovOpen = document.querySelector('.ov.show');
     if (ovOpen) return;
     // 탭바에서 시작된 터치는 일별/월별 스와이프 무시
-    if (e.target.closest('#tabsFixed') || e.target.closest('#tabsWrap')) return;
+    if (e.target.closest('#tabsFixed') || e.target.closest('#tabsWrap')) {
+      swipeStartX = null; // null로 표시 → touchend에서도 무시
+      return;
+    }
     swipeStartX = e.touches[0].clientX;
     swipeStartY = e.touches[0].clientY;
     swipeStartTime = Date.now();
@@ -2076,6 +2109,7 @@ function initSwipe() {
   document.addEventListener('touchend', e => {
     const ovOpen = document.querySelector('.ov.show');
     if (ovOpen) return;
+    if (swipeStartX === null) return; // 탭바에서 시작된 터치 무시
 
     const dx = e.changedTouches[0].clientX - swipeStartX;
     const dy = e.changedTouches[0].clientY - swipeStartY;
