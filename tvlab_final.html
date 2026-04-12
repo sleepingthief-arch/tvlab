@@ -391,7 +391,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/12 03:21</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/12 03:28</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -420,19 +420,21 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
 </div>
 
 <!-- 뷰 탭 -->
-<div style="padding:10px 16px 4px;overflow:hidden;" id="tabsWrapOuter">
-  <!-- 슬라이더 트랙: 버튼 전체를 translateX로 밀기 -->
-  <div id="tabsTrack" style="display:flex;gap:6px;align-items:center;transition:transform .25s ease;white-space:nowrap;">
-    <button class="vt on" id="vtDay" onclick="setView('day')" style="flex-shrink:0;">📋 일별</button>
-    <button class="vt" id="vtMon" onclick="setView('month')" style="flex-shrink:0;">📅 월별</button>
-    <button onclick="goToday();setView('day');" style="flex-shrink:0;background:var(--accent);color:#fff;border:none;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;">오늘</button>
-    <button onclick="openTimeline()" style="flex-shrink:0;background:var(--card2);border:1px solid var(--border);color:var(--text2);padding:7px 10px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;">⏱️</button>
-    <div style="width:1px;height:20px;background:var(--border);flex-shrink:0;margin:0 2px;"></div>
-    <button class="mat-btn" style="flex-shrink:0;" onclick="openMat()">📦 자재</button>
+<div style="overflow-x:scroll;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;padding:10px 16px 4px;" id="tabsWrap">
+  <div style="display:flex;gap:6px;align-items:center;min-width:100%;">
+    <!-- 4개 버튼: flex:1로 화면 꽉 채움 -->
+    <button class="vt on" id="vtDay" onclick="setView('day')" style="flex:1;">📋 일별</button>
+    <button class="vt" id="vtMon" onclick="setView('month')" style="flex:1;">📅 월별</button>
+    <button onclick="goToday();setView('day');" style="flex:1;background:var(--accent);color:#fff;border:none;padding:7px 4px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;">오늘</button>
+    <button onclick="openTimeline()" style="flex:1;background:var(--card2);border:1px solid var(--border);color:var(--text2);padding:7px 4px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;">⏱️</button>
+    <!-- 구분선 + 숨겨진 버튼들 -->
+    <div style="width:1px;height:20px;background:var(--border);flex-shrink:0;margin:0 4px;"></div>
+    <button class="mat-btn" onclick="openMat()" style="flex-shrink:0;">📦 자재</button>
     <button class="mat-btn boss-only" onclick="openExpense()" style="flex-shrink:0;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;">🧾 지출</button>
     <button onclick="openBlog()" style="flex-shrink:0;background:none;border:none;font-size:18px;cursor:pointer;padding:0 4px;" title="블로그 초안">✍️</button>
   </div>
 </div>
+<style>#tabsWrap::-webkit-scrollbar{display:none;}</style>
 
 <!-- 설정 페이지 -->
 <div class="settings-wrap" id="settingsWrap">
@@ -4242,45 +4244,6 @@ function resetSettings() {
 // 초기화
 // ════════════════════════════════════════════
 function init() {
-  // 탭바 스와이프 (tabsWrapOuter 영역만, 일별 스와이프와 완전 분리)
-  setTimeout(function() {
-    var outer = document.getElementById('tabsWrapOuter');
-    var track = document.getElementById('tabsTrack');
-    if (!outer || !track) return;
-    var tabOpen = false; // false=기본(일별~타임라인), true=열림(자재~블로그)
-    var sx = 0, sy = 0, isHoriz = null;
-
-    outer.addEventListener('touchstart', function(e) {
-      sx = e.touches[0].clientX;
-      sy = e.touches[0].clientY;
-      isHoriz = null;
-    }, {passive:true});
-
-    outer.addEventListener('touchmove', function(e) {
-      if (isHoriz === null) {
-        var dx = Math.abs(e.touches[0].clientX - sx);
-        var dy = Math.abs(e.touches[0].clientY - sy);
-        if (dx > 8 || dy > 8) isHoriz = dx >= dy;
-      }
-      // 가로 스와이프면 이벤트 막아서 일별 스와이프 방지
-      if (isHoriz) e.preventDefault();
-    }, {passive:false});
-
-    outer.addEventListener('touchend', function(e) {
-      if (!isHoriz) return;
-      var dx = e.changedTouches[0].clientX - sx;
-      if (dx < -40 && !tabOpen) {
-        // 왼쪽 스와이프 → 자재/지출/블로그 보이기
-        var shift = outer.offsetWidth + 8;
-        track.style.transform = 'translateX(-' + shift + 'px)';
-        tabOpen = true;
-      } else if (dx > 40 && tabOpen) {
-        // 오른쪽 스와이프 → 원래대로
-        track.style.transform = 'translateX(0)';
-        tabOpen = false;
-      }
-    }, {passive:true});
-  }, 100);
   // 자동 로그인
   if (localStorage.getItem('tvlab_boss') === 'true') {
     isBoss = true;
