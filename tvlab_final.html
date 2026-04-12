@@ -391,7 +391,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/12 02:58</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/12 10:32</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -421,18 +421,19 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
 
 <!-- 뷰 탭 -->
 <div style="overflow-x:scroll;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;padding:10px 16px 4px;" id="tabsWrap">
-  <div style="display:flex;gap:6px;align-items:center;width:max-content;">
-    <button class="vt on" id="vtDay" onclick="setView('day')">📋 일별</button>
-    <button class="vt" id="vtMon" onclick="setView('month')">📅 월별</button>
-    <button onclick="goToday();setView('day');" style="background:var(--accent);color:#fff;border:none;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;">오늘</button>
-    <button onclick="openTimeline()" style="background:var(--card2);border:1px solid var(--border);color:var(--text2);padding:7px 10px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;">⏱️</button>
-    <div style="width:1px;height:20px;background:var(--border);flex-shrink:0;margin:0 2px;"></div>
-    <button class="mat-btn" onclick="openMat()">📦 자재</button>
-    <button class="mat-btn boss-only" onclick="openExpense()" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;">🧾 지출</button>
-    <button onclick="openBlog()" style="background:none;border:none;font-size:18px;cursor:pointer;padding:0 4px;" title="블로그 초안">✍️</button>
+  <div style="display:flex;gap:6px;align-items:center;min-width:100%;box-sizing:border-box;">
+    <button class="vt on" id="vtDay" onclick="setView('day')" style="flex:1;min-width:0;">📋 일별</button>
+    <button class="vt" id="vtMon" onclick="setView('month')" style="flex:1;min-width:0;">📅 월별</button>
+    <button onclick="goToday();setView('day');" style="flex:1;min-width:0;background:var(--accent);color:#fff;border:none;padding:7px 2px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;">오늘</button>
+    <button onclick="openTimeline()" style="flex:1;min-width:0;background:var(--card2);border:1px solid var(--border);color:var(--text2);padding:7px 2px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;">⏱️</button>
+    <button class="mat-btn" onclick="openMat()" style="flex-shrink:0;">📦 자재</button>
+    <button class="mat-btn boss-only" onclick="openExpense()" style="flex-shrink:0;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;">🧾 지출</button>
+    <button onclick="openBlog()" style="flex-shrink:0;background:none;border:none;font-size:18px;cursor:pointer;padding:0 4px;" title="블로그 초안">✍️</button>
   </div>
 </div>
-<style>#tabsWrap::-webkit-scrollbar{display:none;}</style>
+<style>
+#tabsWrap::-webkit-scrollbar{display:none;}
+</style>
 
 <!-- 설정 페이지 -->
 <div class="settings-wrap" id="settingsWrap">
@@ -2013,6 +2014,8 @@ function initSwipe() {
   document.addEventListener('touchstart', e => {
     const ovOpen = document.querySelector('.ov.show');
     if (ovOpen) return;
+    // 탭바에서 시작된 터치는 일별/월별 스와이프 무시
+    if (e.target.closest('#tabsWrap')) return;
     swipeStartX = e.touches[0].clientX;
     swipeStartY = e.touches[0].clientY;
     swipeStartTime = Date.now();
