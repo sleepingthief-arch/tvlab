@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="입찰관리">
+<title>티비랩 입찰관리</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root {
+  --bg:#0d1117; --surface:#161b22; --surface2:#1c2128;
+  --border:#30363d; --gold:#e6a817; --green:#3fb950;
+  --red:#f85149; --yellow:#d29922; --blue:#58a6ff;
+  --purple:#bc8cff; --text:#e6edf3; --dim:#8b949e; --muted:#484f58;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;}
+
+/* 상단 헤더 */
+.top-bar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:14px 16px 10px;
+  display:flex;justify-content:space-between;align-items:center;
+  flex-shrink:0;
+  padding-top:max(14px, env(safe-area-inset-top));
+}
+.top-bar-title{font-size:16px;font-weight:700;}
+.top-bar-title span{color:var(--gold);}
+.top-bar-stat{text-align:right;}
+.top-bar-stat .big{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;color:var(--gold);}
+.top-bar-stat .small{font-size:10px;color:var(--dim);}
+
+/* 스크롤 영역 */
+.scroll-area{flex:1;overflow-y:auto;padding:12px 16px 100px;-webkit-overflow-scrolling:touch;}
+
+/* 하단 탭 */
+.bottom-tabs{
+  flex-shrink:0;
+  background:var(--surface);border-top:1px solid var(--border);
+  display:flex;
+  padding-bottom:max(8px,env(safe-area-inset-bottom));
+}
+.btab{flex:1;padding:10px 4px 6px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.btab .icon{font-size:20px;margin-bottom:2px;}
+.btab .label{font-size:10px;color:var(--dim);font-weight:500;}
+.btab.active .label{color:var(--gold);}
+.btab.active .icon{filter:drop-shadow(0 0 4px rgba(230,168,23,0.6));}
+
+/* 탭 컨텐츠 */
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+
+/* 카드 */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
+.card-title{font-size:11px;font-weight:600;letter-spacing:0.12em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.card-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* 입찰 목록 아이템 */
+.bid-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;}
+.bid-item:active{opacity:0.8;}
+.bid-item-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.bid-name{font-size:13px;font-weight:600;flex:1;margin-right:8px;line-height:1.4;}
+.bid-status{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;}
+.bid-status.ongoing{background:rgba(88,166,255,0.15);color:var(--blue);}
+.bid-status.win{background:rgba(63,185,80,0.15);color:var(--green);}
+.bid-status.lose{background:rgba(248,81,73,0.15);color:var(--red);}
+.bid-status.pending{background:rgba(210,153,34,0.15);color:var(--yellow);}
+.bid-meta{display:flex;gap:12px;flex-wrap:wrap;}
+.bid-meta-item{font-size:11px;color:var(--dim);}
+.bid-meta-item span{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--text);}
+.bid-rec{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:11px;color:var(--gold);}
+
+/* 빈 상태 */
+.empty-state{text-align:center;padding:48px 20px;color:var(--dim);}
+.empty-state .icon{font-size:40px;margin-bottom:12px;}
+.empty-state p{font-size:13px;line-height:1.7;}
+
+/* 버튼들 */
+.btn-gold{width:100%;background:var(--gold);color:#000;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all 0.2s;}
+.btn-gold:active{opacity:0.85;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;}
+.btn-green{background:rgba(63,185,80,0.1);border:1px solid rgba(63,185,80,0.3);color:var(--green);border-radius:8px;padding:10px 16px;font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;}
+.btn-red{background:rgba(248,81,73,0.1);border:1px solid rgba(248,81,73,0.3);color:var(--red);border-radius:8px;padding:10px 16px;font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;}
+.btn-row{display:flex;gap:8px;margin-top:10px;}
+.btn-row>*{flex:1;}
+
+/* 폼 */
+.form-group{margin-bottom:12px;}
+.form-label{font-size:11px;color:var(--dim);margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;}
+.auto-badge{font-size:10px;background:rgba(63,185,80,0.15);color:var(--green);border-radius:4px;padding:1px 6px;font-weight:600;}
+.form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--text);outline:none;transition:border-color 0.2s;}
+.form-input:focus{border-color:var(--gold);}
+.form-input.af{border-color:rgba(63,185,80,0.4);background:rgba(63,185,80,0.04);}
+.form-input.plain{font-family:'Noto Sans KR',sans-serif;font-weight:400;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+/* PDF 드롭존 */
+.pdf-zone{border:2px dashed rgba(230,168,23,0.3);border-radius:10px;padding:20px;text-align:center;cursor:pointer;position:relative;transition:all 0.3s;background:rgba(230,168,23,0.02);}
+.pdf-zone.drag-over,.pdf-zone:active{border-color:var(--gold);background:rgba(230,168,23,0.07);}
+.pdf-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.pdf-zone-icon{font-size:24px;margin-bottom:6px;}
+.pdf-zone-text{font-size:13px;font-weight:600;margin-bottom:2px;}
+.pdf-zone-sub{font-size:11px;color:var(--dim);}
+
+.status-msg{display:none;margin-top:8px;border-radius:8px;padding:9px 12px;font-size:12px;}
+.status-msg.loading{display:flex;align-items:center;gap:8px;background:rgba(88,166,255,0.08);border:1px solid rgba(88,166,255,0.2);color:var(--blue);}
+.status-msg.ok{display:block;background:rgba(63,185,80,0.08);border:1px solid rgba(63,185,80,0.2);color:var(--green);}
+.status-msg.err{display:block;background:rgba(248,81,73,0.08);border:1px solid rgba(248,81,73,0.2);color:var(--red);}
+
+/* 추천가 박스 */
+.rec-box{background:linear-gradient(135deg,rgba(230,168,23,0.12),rgba(230,168,23,0.04));border:1px solid rgba(230,168,23,0.3);border-radius:12px;padding:16px;text-align:center;margin:12px 0;}
+.rec-box-label{font-size:10px;letter-spacing:0.15em;color:var(--gold);margin-bottom:6px;}
+.rec-box-val{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:600;margin-bottom:4px;}
+.rec-box-rate{font-size:12px;color:var(--dim);margin-bottom:8px;}
+.rec-box-reason{font-size:11px;color:var(--dim);line-height:1.7;text-align:left;background:var(--surface2);border-radius:8px;padding:10px;}
+
+/* 데이터 분석 */
+.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.stat-row:last-child{border-bottom:none;}
+.stat-key{color:var(--dim);}
+.stat-val{font-family:'IBM Plex Mono',monospace;font-weight:600;}
+.stat-val.g{color:var(--green);}
+.stat-val.y{color:var(--yellow);}
+.stat-val.r{color:var(--red);}
+
+.history-item{background:var(--surface2);border-radius:8px;padding:11px;margin-bottom:7px;}
+.history-top{display:flex;justify-content:space-between;margin-bottom:6px;}
+.history-name{font-size:12px;font-weight:600;flex:1;margin-right:8px;}
+.history-result{font-size:11px;font-weight:700;}
+.history-result.w{color:var(--green);}
+.history-result.l{color:var(--red);}
+.history-nums{display:flex;gap:12px;flex-wrap:wrap;}
+.history-num{font-size:10px;color:var(--dim);}
+.history-num span{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--text);}
+
+/* 모달 */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;display:none;align-items:flex-end;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px;width:100%;max-height:90vh;overflow-y:auto;padding-bottom:max(20px,env(safe-area-inset-bottom));}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:16px;}
+
+/* 결과 입력 모달 */
+.result-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.result-btn{padding:16px;border-radius:10px;border:2px solid var(--border);text-align:center;cursor:pointer;transition:all 0.2s;}
+.result-btn:active{opacity:0.8;}
+.result-btn.selected-win{border-color:var(--green);background:rgba(63,185,80,0.1);}
+.result-btn.selected-lose{border-color:var(--red);background:rgba(248,81,73,0.1);}
+.result-btn .rb-icon{font-size:24px;margin-bottom:4px;}
+.result-btn .rb-text{font-size:13px;font-weight:700;}
+
+/* 분석 인사이트 */
+.insight-box{background:rgba(230,168,23,0.06);border:1px solid rgba(230,168,23,0.2);border-radius:10px;padding:13px;margin-bottom:10px;}
+.insight-title{font-size:11px;font-weight:700;color:var(--gold);margin-bottom:6px;}
+.insight-text{font-size:12px;color:var(--dim);line-height:1.8;}
+.insight-text strong{color:var(--text);}
+
+.divider{height:1px;background:var(--border);margin:12px 0;}
+.section-label{font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
+</style>
+</head>
+<body>
+
+<!-- 상단 헤더 -->
+<div class="top-bar">
+  <div>
+    <div class="top-bar-title">TV<span>LAB</span> 입찰</div>
+    <div style="font-size:10px;color:var(--dim)" id="headerSub">입찰 데이터 관리</div>
+  </div>
+  <div class="top-bar-stat">
+    <div class="big" id="headerWinRate">—</div>
+    <div class="small">낙찰률</div>
+  </div>
+</div>
+
+<!-- 스크롤 영역 -->
+<div class="scroll-area" id="scrollArea">
+
+  <!-- 탭 1: 입찰 목록 -->
+  <div class="tab-pane active" id="pane-list">
+    <div id="bidListContainer"></div>
+  </div>
+
+  <!-- 탭 2: 새 입찰 -->
+  <div class="tab-pane" id="pane-new">
+    <div class="card">
+      <div class="card-title">📄 공고문 PDF</div>
+      <div class="pdf-zone" id="pdfZone">
+        <input type="file" accept=".pdf" id="pdfInput" onchange="handlePDF(this.files[0])">
+        <div class="pdf-zone-icon">📋</div>
+        <div class="pdf-zone-text">공고문 PDF 업로드</div>
+        <div class="pdf-zone-sub">탭하면 파일 선택 · 수치 자동 추출</div>
+      </div>
+      <div class="status-msg" id="pdfStatus"></div>
+      <div id="extractedPreview" style="display:none;margin-top:10px;background:var(--surface2);border-radius:8px;padding:10px;font-size:11px;color:var(--dim);"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">✏️ 공고 정보</div>
+      <div class="form-group">
+        <div class="form-label">공사명</div>
+        <input class="form-input plain" id="n_name" placeholder="예: 추동 숲정원 환경정비 전기공사">
+      </div>
+      <div class="form-group">
+        <div class="form-label">발주처</div>
+        <input class="form-input plain" id="n_issuer" placeholder="예: 의정부시">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">마감일</div>
+          <input class="form-input plain" type="date" id="n_deadline">
+        </div>
+        <div class="form-group">
+          <div class="form-label">개찰일</div>
+          <input class="form-input plain" type="date" id="n_opendate">
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">
+          기초금액
+          <span class="auto-badge" id="tag_base" style="display:none">자동추출</span>
+        </div>
+        <input class="form-input" id="n_base" placeholder="167606370">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">
+            낙찰하한율(%)
+            <span class="auto-badge" id="tag_rate" style="display:none">자동추출</span>
+          </div>
+          <input class="form-input" id="n_rate" placeholder="89.745">
+        </div>
+        <div class="form-group">
+          <div class="form-label">
+            순공사원가 기준
+            <span class="auto-badge" id="tag_pure" style="display:none">자동추출</span>
+          </div>
+          <input class="form-input" id="n_pure" placeholder="153880746">
+        </div>
+      </div>
+    </div>
+
+    <div id="recSection" style="display:none">
+      <div class="card">
+        <div class="card-title">🎯 추천 투찰가</div>
+        <div class="rec-box">
+          <div class="rec-box-label">✦ 이번 투찰 추천가</div>
+          <div class="rec-box-val" id="recVal">—</div>
+          <div class="rec-box-rate" id="recRate">—</div>
+          <div class="rec-box-reason" id="recReason">—</div>
+        </div>
+        <div class="form-group" style="margin-top:12px">
+          <div class="form-label">실제 투찰가 (수정 가능)</div>
+          <input class="form-input" id="n_mybid" placeholder="직접 수정 가능">
+        </div>
+      </div>
+      <button class="btn-gold" onclick="saveBid()">📥 입찰 등록하기</button>
+    </div>
+
+    <div id="calcBtnWrap">
+      <button class="btn-gold" onclick="calcRecommend()" style="margin-top:4px">📊 추천 투찰가 계산</button>
+    </div>
+  </div>
+
+  <!-- 탭 3: 분석 -->
+  <div class="tab-pane" id="pane-stats">
+    <div id="statsContainer"></div>
+  </div>
+
+</div>
+
+<!-- 하단 탭 -->
+<div class="bottom-tabs">
+  <div class="btab active" onclick="switchTab('list')" id="btab-list">
+    <div class="icon">📋</div>
+    <div class="label">입찰 목록</div>
+  </div>
+  <div class="btab" onclick="switchTab('new')" id="btab-new">
+    <div class="icon">➕</div>
+    <div class="label">새 입찰</div>
+  </div>
+  <div class="btab" onclick="switchTab('stats')" id="btab-stats">
+    <div class="icon">📈</div>
+    <div class="label">데이터 분석</div>
+  </div>
+</div>
+
+<!-- 결과 입력 모달 -->
+<div class="modal-overlay" id="resultModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle">결과 입력</div>
+
+    <div class="result-btns">
+      <div class="result-btn" id="btnWin" onclick="selectResult('win')">
+        <div class="rb-icon">🎉</div>
+        <div class="rb-text" style="color:var(--green)">낙찰!</div>
+      </div>
+      <div class="result-btn" id="btnLose" onclick="selectResult('lose')">
+        <div class="rb-icon">😅</div>
+        <div class="rb-text" style="color:var(--red)">미낙찰</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">예정가격 (공개된 경우 입력)</div>
+      <input class="form-input" id="modal_estprice" placeholder="개찰 후 확인 가능">
+    </div>
+    <div class="form-group" id="winAmountWrap" style="display:none">
+      <div class="form-label">낙찰 금액</div>
+      <input class="form-input" id="modal_winamount" placeholder="최종 낙찰 금액">
+    </div>
+    <div class="form-group">
+      <div class="form-label">메모</div>
+      <input class="form-input plain" id="modal_memo" placeholder="경쟁 업체 수, 특이사항 등">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-outline" onclick="closeModal()">취소</button>
+      <button class="btn-gold" onclick="saveResult()" style="flex:2">결과 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 상세 모달 -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="detailContent"></div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn-outline" onclick="closeDetailModal()">닫기</button>
+      <button class="btn-red" onclick="deleteBidConfirm()" id="deleteBtn">삭제</button>
+      <button class="btn-green" onclick="openResultModal()" id="resultBtn" style="flex:2">결과 입력</button>
+    </div>
+  </div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── 데이터 저장소 ──
+function loadBids() { return JSON.parse(localStorage.getItem('tvlab_bids') || '[]'); }
+function saveBids(bids) { localStorage.setItem('tvlab_bids', JSON.stringify(bids)); }
+
+let currentBidId = null;
+let selectedResult = null;
+
+// ── 숫자 포맷 ──
+function fw(n) { return Math.round(n).toLocaleString('ko-KR') + '원'; }
+function fp(n, d=3) { return (n*100).toFixed(d) + '%'; }
+
+// ── 탭 전환 ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.btab').forEach(b => b.classList.remove('active'));
+  document.getElementById('pane-' + tab).classList.add('active');
+  document.getElementById('btab-' + tab).classList.add('active');
+  document.getElementById('scrollArea').scrollTop = 0;
+  if (tab === 'list') renderList();
+  if (tab === 'stats') renderStats();
+  if (tab === 'new') resetNewForm();
+}
+
+// ── 새 입찰 폼 리셋 ──
+function resetNewForm() {
+  ['n_name','n_issuer','n_deadline','n_opendate','n_base','n_rate','n_pure','n_mybid'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.classList.remove('af'); }
+  });
+  ['tag_base','tag_rate','tag_pure'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('recSection').style.display = 'none';
+  document.getElementById('calcBtnWrap').style.display = 'block';
+  document.getElementById('pdfStatus').style.display = 'none';
+  document.getElementById('extractedPreview').style.display = 'none';
+  document.getElementById('pdfInput').value = '';
+}
+
+// ── PDF 처리 ──
+const zone = document.getElementById('pdfZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); const f = e.dataTransfer.files[0]; if (f) handlePDF(f); });
+
+async function handlePDF(file) {
+  const st = document.getElementById('pdfStatus');
+  const prev = document.getElementById('extractedPreview');
+  st.className = 'status-msg loading';
+  st.innerHTML = '⏳ PDF 분석 중...';
+  prev.style.display = 'none';
+
+  try {
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    let text = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(x => x.str).join(' ') + '\n';
+    }
+
+    const ex = extractFromText(text);
+    st.className = 'status-msg ok';
+    st.innerHTML = `✅ 분석 완료! ${Object.values(ex).filter(Boolean).length}개 수치 추출됨`;
+
+    // 미리보기
+    prev.style.display = 'block';
+    prev.innerHTML = `
+      <div style="font-size:10px;font-weight:600;color:var(--muted);margin-bottom:6px">추출 결과</div>
+      ${epRow('공사명', ex.name)}
+      ${epRow('발주처', ex.issuer)}
+      ${epRow('기초금액', ex.base ? fw(ex.base) : null)}
+      ${epRow('낙찰하한율', ex.rate ? ex.rate + '%' : null)}
+      ${epRow('순공사원가 기준', ex.pure ? fw(ex.pure) : null)}
+      ${epRow('입찰 마감', ex.deadline)}
+    `;
+
+    // 자동 채우기
+    if (ex.name) setF('n_name', ex.name, null);
+    if (ex.issuer) setF('n_issuer', ex.issuer, null);
+    if (ex.base) setF('n_base', ex.base, 'tag_base');
+    if (ex.rate) setF('n_rate', ex.rate, 'tag_rate');
+    if (ex.pure) setF('n_pure', ex.pure, 'tag_pure');
+
+  } catch(e) {
+    st.className = 'status-msg err';
+    st.innerHTML = '❌ 분석 실패. 직접 입력해주세요.';
+  }
+}
+
+function epRow(k, v) {
+  return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px;">
+    <span style="color:var(--dim)">${k}</span>
+    <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:${v?'var(--green)':'var(--red)'}">${v||'추출 안됨'}</span>
+  </div>`;
+}
+
+function setF(id, val, tagId) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.value = val;
+  if (tagId) { el.classList.add('af'); document.getElementById(tagId).style.display = 'inline'; }
+}
+
+function extractFromText(text) {
+  const t = text.replace(/,/g, '').replace(/\s+/g, ' ');
+  const res = {};
+
+  const nameM = text.match(/공\s*사\s*명[：:\s]+([^\n]+)/);
+  if (nameM) res.name = nameM[1].trim().substring(0, 40);
+
+  const issuerM = text.match(/([가-힣]+시|[가-힣]+군|[가-힣]+구)\s*(공고|시설)/);
+  if (issuerM) res.issuer = issuerM[1];
+
+  // 기초금액: 테이블에서 추정가격(ⓑ) 위치 숫자 — 큰 숫자 줄에서 3번째
+  const tableNums = t.match(/(\d{8,})\s+(\d{8,})\s+(\d{8,})/);
+  if (tableNums) res.base = parseInt(tableNums[3]);
+  if (!res.base) {
+    const bm = t.match(/기초금액[^0-9]*(\d{7,})/);
+    if (bm) res.base = parseInt(bm[1]);
+  }
+
+  const rateM = t.match(/낙찰하한율[^%\d]*([\d.]+)%/);
+  if (rateM) res.rate = parseFloat(rateM[1]);
+
+  const pureM = t.match(/합산한 금액[^\d]*(\d{8,})원/);
+  if (pureM) res.pure = parseInt(pureM[1]);
+
+  const deadM = text.match(/제출기간[：:\s]+([^\n]{10,40})/);
+  if (deadM) res.deadline = deadM[1].trim().substring(0, 30);
+
+  return res;
+}
+
+// ── 추천 투찰가 계산 ──
+function calcRecommend() {
+  const base = parseFloat(document.getElementById('n_base').value);
+  const rate = parseFloat(document.getElementById('n_rate').value) / 100;
+  const pure = parseFloat(document.getElementById('n_pure').value) || 0;
+
+  if (!base || !rate) { alert('기초금액과 낙찰하한율을 입력해주세요!'); return; }
+
+  const bids = loadBids();
+  const issuer = document.getElementById('n_issuer').value.trim();
+
+  // 기본 계산
+  const minBid = base * rate;
+  const pureMin = pure > 0 ? pure * 0.98 : 0;
+  const safeLow = Math.max(minBid, pureMin);
+  const safeHigh = base * 0.998;
+
+  // 과거 데이터 분석
+  const pastData = bids.filter(b => b.status !== 'ongoing' && b.estPrice);
+  const issuerData = issuer ? pastData.filter(b => b.issuer === issuer) : [];
+
+  let recommend, reason, avgStr = '';
+
+  if (issuerData.length >= 3) {
+    // 같은 발주처 데이터 3개 이상 → 과거 예정가격 평균 기반
+    const avgEst = issuerData.reduce((s,b) => s + b.estPrice, 0) / issuerData.length;
+    const avgRate = avgEst / base; // 기초금액 대비 비율로 환산
+    recommend = base * avgRate * 0.998; // 예정가격 직전
+    recommend = Math.max(recommend, safeLow);
+    avgStr = `${issuer} 과거 ${issuerData.length}건 평균 예정가격 비율(${fp(avgRate)}) 기반`;
+    reason = `📊 ${avgStr}\n과거 데이터가 충분해 정교한 추천이 가능합니다. 예정가격 추정치 직전을 노립니다.`;
+  } else if (pastData.length >= 5) {
+    // 전체 데이터 기반
+    const avgRate = pastData.reduce((s,b) => s + (b.estPrice / b.base), 0) / pastData.length;
+    recommend = base * avgRate * 0.997;
+    recommend = Math.max(recommend, safeLow);
+    avgStr = `전체 ${pastData.length}건 평균 예정가격 비율(${fp(avgRate)}) 기반`;
+    reason = `📈 ${avgStr}\n데이터가 쌓일수록 추천 정확도가 높아집니다.`;
+  } else {
+    // 초기 전략: 안전구간 하단 35% 지점
+    recommend = safeLow + (safeHigh - safeLow) * 0.35;
+    const dataNeeded = 5 - pastData.length;
+    reason = `🔰 초기 전략 — 안전구간 내 보수적 투찰\n아직 데이터가 ${dataNeeded}건 더 필요해요. 결과를 꼭 기록해주세요!`;
+  }
+
+  recommend = Math.round(recommend);
+  const recRate = recommend / base;
+
+  document.getElementById('recVal').textContent = fw(recommend);
+  document.getElementById('recRate').textContent = `기초금액의 ${fp(recRate, 2)} · 낙찰하한 ${fp(rate, 3)}`;
+  document.getElementById('recReason').textContent = reason;
+  document.getElementById('n_mybid').value = recommend;
+
+  document.getElementById('recSection').style.display = 'block';
+  document.getElementById('calcBtnWrap').style.display = 'none';
+}
+
+// ── 입찰 저장 ──
+function saveBid() {
+  const name = document.getElementById('n_name').value.trim();
+  const base = parseFloat(document.getElementById('n_base').value);
+  const mybid = parseFloat(document.getElementById('n_mybid').value);
+
+  if (!name || !base || !mybid) { alert('공사명, 기초금액, 투찰가는 필수입니다!'); return; }
+
+  const bid = {
+    id: Date.now(),
+    name,
+    issuer: document.getElementById('n_issuer').value.trim(),
+    deadline: document.getElementById('n_deadline').value,
+    opendate: document.getElementById('n_opendate').value,
+    base,
+    rate: parseFloat(document.getElementById('n_rate').value),
+    pure: parseFloat(document.getElementById('n_pure').value) || 0,
+    myBid: mybid,
+    recBid: parseFloat(document.getElementById('recVal').textContent.replace(/[^0-9]/g,'')),
+    status: 'ongoing',
+    createdAt: new Date().toISOString(),
+  };
+
+  const bids = loadBids();
+  bids.unshift(bid);
+  saveBids(bids);
+
+  alert('✅ 입찰이 등록됐어요!');
+  updateHeader();
+  switchTab('list');
+}
+
+// ── 목록 렌더 ──
+function renderList() {
+  const bids = loadBids();
+  const container = document.getElementById('bidListContainer');
+
+  if (bids.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="icon">📋</div>
+      <p>아직 입찰 내역이 없어요.<br>+ 새 입찰 탭에서 첫 입찰을 등록해보세요!</p>
+    </div>`;
+    return;
+  }
+
+  const ongoing = bids.filter(b => b.status === 'ongoing');
+  const done = bids.filter(b => b.status !== 'ongoing');
+
+  let html = '';
+
+  if (ongoing.length > 0) {
+    html += `<div class="section-label">진행 중 (${ongoing.length}건)</div>`;
+    ongoing.forEach(b => { html += bidCard(b); });
+  }
+
+  if (done.length > 0) {
+    html += `<div class="section-label" style="margin-top:16px">완료 (${done.length}건)</div>`;
+    done.forEach(b => { html += bidCard(b); });
+  }
+
+  container.innerHTML = html;
+}
+
+function bidCard(b) {
+  const statusMap = { ongoing:'진행중', win:'낙찰🎉', lose:'미낙찰', pending:'대기중' };
+  const statusClass = { ongoing:'ongoing', win:'win', lose:'lose', pending:'pending' };
+  const rateStr = b.base ? `${((b.myBid/b.base)*100).toFixed(2)}%` : '—';
+
+  return `<div class="bid-item" onclick="openDetail(${b.id})">
+    <div class="bid-item-top">
+      <div class="bid-name">${b.name}</div>
+      <div class="bid-status ${statusClass[b.status]||'ongoing'}">${statusMap[b.status]||'진행중'}</div>
+    </div>
+    <div class="bid-meta">
+      <div class="bid-meta-item">${b.issuer||'발주처미입력'}</div>
+      <div class="bid-meta-item">투찰 <span>${fw(b.myBid)}</span></div>
+      <div class="bid-meta-item">기초금액의 <span>${rateStr}</span></div>
+      ${b.opendate ? `<div class="bid-meta-item">개찰 <span>${b.opendate}</span></div>` : ''}
+    </div>
+    ${b.status === 'ongoing' ? `<div class="bid-rec">👆 탭해서 결과 입력</div>` : ''}
+    ${b.estPrice ? `<div class="bid-rec" style="color:var(--dim)">예정가격 ${fw(b.estPrice)}</div>` : ''}
+  </div>`;
+}
+
+// ── 상세 모달 ──
+function openDetail(id) {
+  currentBidId = id;
+  const bids = loadBids();
+  const b = bids.find(x => x.id === id);
+  if (!b) return;
+
+  const statusMap = { ongoing:'진행중', win:'낙찰', lose:'미낙찰' };
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="modal-title">${b.name}</div>
+    <div class="stat-row"><span class="stat-key">발주처</span><span class="stat-val">${b.issuer||'—'}</span></div>
+    <div class="stat-row"><span class="stat-key">상태</span><span class="stat-val ${b.status==='win'?'g':b.status==='lose'?'r':'y'}">${statusMap[b.status]||'진행중'}</span></div>
+    <div class="stat-row"><span class="stat-key">기초금액</span><span class="stat-val">${fw(b.base)}</span></div>
+    <div class="stat-row"><span class="stat-key">낙찰하한율</span><span class="stat-val">${b.rate}%</span></div>
+    <div class="stat-row"><span class="stat-key">내 투찰가</span><span class="stat-val">${fw(b.myBid)}</span></div>
+    <div class="stat-row"><span class="stat-key">기초금액 대비</span><span class="stat-val">${((b.myBid/b.base)*100).toFixed(3)}%</span></div>
+    ${b.estPrice ? `<div class="stat-row"><span class="stat-key">예정가격</span><span class="stat-val g">${fw(b.estPrice)}</span></div>` : ''}
+    ${b.estPrice ? `<div class="stat-row"><span class="stat-key">예정가격 대비</span><span class="stat-val">${((b.myBid/b.estPrice)*100).toFixed(3)}%</span></div>` : ''}
+    ${b.memo ? `<div class="stat-row"><span class="stat-key">메모</span><span class="stat-val" style="font-family:'Noto Sans KR'">${b.memo}</span></div>` : ''}
+    <div class="stat-row"><span class="stat-key">등록일</span><span class="stat-val">${new Date(b.createdAt).toLocaleDateString('ko-KR')}</span></div>
+  `;
+
+  document.getElementById('resultBtn').style.display = b.status === 'ongoing' ? 'block' : 'none';
+  document.getElementById('detailModal').classList.add('show');
+}
+
+function closeDetailModal() {
+  document.getElementById('detailModal').classList.remove('show');
+  currentBidId = null;
+}
+
+function deleteBidConfirm() {
+  if (!confirm('이 입찰 기록을 삭제할까요?')) return;
+  const bids = loadBids().filter(b => b.id !== currentBidId);
+  saveBids(bids);
+  closeDetailModal();
+  updateHeader();
+  renderList();
+}
+
+// ── 결과 입력 모달 ──
+function openResultModal() {
+  closeDetailModal();
+  selectedResult = null;
+  document.getElementById('modal_estprice').value = '';
+  document.getElementById('modal_winamount').value = '';
+  document.getElementById('modal_memo').value = '';
+  document.getElementById('btnWin').className = 'result-btn';
+  document.getElementById('btnLose').className = 'result-btn';
+  document.getElementById('winAmountWrap').style.display = 'none';
+
+  const bids = loadBids();
+  const b = bids.find(x => x.id === currentBidId);
+  document.getElementById('modalTitle').textContent = b ? b.name.substring(0,20) + '...' : '결과 입력';
+
+  document.getElementById('resultModal').classList.add('show');
+}
+
+function selectResult(type) {
+  selectedResult = type;
+  document.getElementById('btnWin').className = 'result-btn' + (type==='win'?' selected-win':'');
+  document.getElementById('btnLose').className = 'result-btn' + (type==='lose'?' selected-lose':'');
+  document.getElementById('winAmountWrap').style.display = type === 'win' ? 'block' : 'none';
+}
+
+function closeModal() {
+  document.getElementById('resultModal').classList.remove('show');
+}
+
+function saveResult() {
+  if (!selectedResult) { alert('낙찰 여부를 선택해주세요!'); return; }
+
+  const bids = loadBids();
+  const idx = bids.findIndex(b => b.id === currentBidId);
+  if (idx === -1) return;
+
+  bids[idx].status = selectedResult;
+  const ep = parseFloat(document.getElementById('modal_estprice').value.replace(/,/g,''));
+  if (ep) bids[idx].estPrice = ep;
+  const wa = parseFloat(document.getElementById('modal_winamount').value.replace(/,/g,''));
+  if (wa) bids[idx].winAmount = wa;
+  const memo = document.getElementById('modal_memo').value.trim();
+  if (memo) bids[idx].memo = memo;
+  bids[idx].resultAt = new Date().toISOString();
+
+  saveBids(bids);
+  closeModal();
+  updateHeader();
+  renderList();
+
+  if (selectedResult === 'win') {
+    setTimeout(() => alert('🎉 낙찰 축하해요!!!'), 200);
+  }
+}
+
+// ── 통계 분석 ──
+function renderStats() {
+  const bids = loadBids();
+  const container = document.getElementById('statsContainer');
+
+  if (bids.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">📈</div><p>아직 데이터가 없어요.<br>입찰을 등록하고 결과를 기록하면<br>분석이 시작됩니다!</p></div>`;
+    return;
+  }
+
+  const done = bids.filter(b => b.status !== 'ongoing');
+  const wins = bids.filter(b => b.status === 'win');
+  const winRate = done.length > 0 ? wins.length / done.length : 0;
+
+  const withEst = done.filter(b => b.estPrice);
+  const avgBidRate = done.length > 0 ? done.reduce((s,b) => s + b.myBid/b.base, 0) / done.length : 0;
+  const avgEstRate = withEst.length > 0 ? withEst.reduce((s,b) => s + b.estPrice/b.base, 0) / withEst.length : 0;
+
+  // 발주처별 분석
+  const issuerMap = {};
+  done.forEach(b => {
+    if (!b.issuer) return;
+    if (!issuerMap[b.issuer]) issuerMap[b.issuer] = { total:0, wins:0, estRates:[] };
+    issuerMap[b.issuer].total++;
+    if (b.status === 'win') issuerMap[b.issuer].wins++;
+    if (b.estPrice) issuerMap[b.issuer].estRates.push(b.estPrice / b.base);
+  });
+
+  // 인사이트 생성
+  let insightHtml = '';
+  if (done.length >= 3) {
+    const nextBase = 100000000; // 예시
+    let insightText = '';
+    if (winRate > 0.3) {
+      insightText = `낙찰률 <strong>${fp(winRate, 1)}</strong>으로 양호해요! 현재 전략을 유지하세요.`;
+    } else if (done.length < 10) {
+      insightText = `아직 <strong>${10-done.length}건</strong> 더 쌓이면 패턴이 보이기 시작해요. 계속 기록해주세요!`;
+    } else if (avgBidRate < avgEstRate - 0.005) {
+      insightText = `내 투찰가(평균 ${fp(avgBidRate)})가 예정가격(평균 ${fp(avgEstRate)})보다 낮은 경향이 있어요. <strong>조금 더 높게</strong> 써보세요.`;
+    } else {
+      insightText = `내 투찰가가 예정가격보다 높은 경향이 있어요. <strong>조금 더 낮게</strong> 써보세요.`;
+    }
+    insightHtml = `<div class="insight-box"><div class="insight-title">🤖 AI 분석 인사이트</div><div class="insight-text">${insightText}</div></div>`;
+  }
+
+  // 발주처 테이블
+  let issuerHtml = '';
+  Object.entries(issuerMap).forEach(([name, d]) => {
+    const wr = d.total > 0 ? d.wins/d.total : 0;
+    const avgEst = d.estRates.length > 0 ? d.estRates.reduce((s,r)=>s+r,0)/d.estRates.length : null;
+    issuerHtml += `<div class="history-item">
+      <div class="history-top">
+        <div class="history-name">${name}</div>
+        <div class="history-result ${wr>0.2?'w':'l'}">${d.wins}/${d.total} 낙찰</div>
+      </div>
+      ${avgEst ? `<div class="history-nums"><div class="history-num">평균 예정가격 비율 <span>${fp(avgEst)}</span></div></div>` : ''}
+    </div>`;
+  });
+
+  // 최근 기록
+  let histHtml = '';
+  bids.slice(0,10).forEach(b => {
+    if (b.status === 'ongoing') return;
+    const diff = b.estPrice ? ((b.myBid - b.estPrice)/b.estPrice*100).toFixed(2) : null;
+    histHtml += `<div class="history-item">
+      <div class="history-top">
+        <div class="history-name">${b.name.substring(0,20)}</div>
+        <div class="history-result ${b.status==='win'?'w':'l'}">${b.status==='win'?'낙찰':'미낙찰'}</div>
+      </div>
+      <div class="history-nums">
+        <div class="history-num">투찰 <span>${fp(b.myBid/b.base)}</span></div>
+        ${b.estPrice ? `<div class="history-num">예정가격 <span>${fp(b.estPrice/b.base)}</span></div>` : ''}
+        ${diff ? `<div class="history-num">차이 <span style="color:${parseFloat(diff)>0?'var(--red)':'var(--green)'}">${diff}%</span></div>` : ''}
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = `
+    ${insightHtml}
+    <div class="card">
+      <div class="card-title">📊 전체 현황</div>
+      <div class="stat-row"><span class="stat-key">총 입찰</span><span class="stat-val">${bids.length}건</span></div>
+      <div class="stat-row"><span class="stat-key">완료</span><span class="stat-val">${done.length}건</span></div>
+      <div class="stat-row"><span class="stat-key">낙찰</span><span class="stat-val g">${wins.length}건</span></div>
+      <div class="stat-row"><span class="stat-key">낙찰률</span><span class="stat-val ${winRate>0.2?'g':'y'}">${done.length>0?fp(winRate,1):'—'}</span></div>
+      ${avgBidRate>0?`<div class="stat-row"><span class="stat-key">평균 투찰율</span><span class="stat-val">${fp(avgBidRate)}</span></div>`:''}
+      ${avgEstRate>0?`<div class="stat-row"><span class="stat-key">평균 예정가격율</span><span class="stat-val">${fp(avgEstRate)}</span></div>`:''}
+    </div>
+    ${Object.keys(issuerMap).length>0?`<div class="card"><div class="card-title">🏢 발주처별</div>${issuerHtml}</div>`:''}
+    ${histHtml?`<div class="card"><div class="card-title">📝 최근 기록</div>${histHtml}</div>`:''}
+  `;
+}
+
+// ── 헤더 업데이트 ──
+function updateHeader() {
+  const bids = loadBids();
+  const done = bids.filter(b => b.status !== 'ongoing');
+  const wins = bids.filter(b => b.status === 'win');
+  const ongoing = bids.filter(b => b.status === 'ongoing');
+
+  if (done.length > 0) {
+    const wr = (wins.length/done.length*100).toFixed(0);
+    document.getElementById('headerWinRate').textContent = wr + '%';
+  } else {
+    document.getElementById('headerWinRate').textContent = '—';
+  }
+  document.getElementById('headerSub').textContent =
+    `진행중 ${ongoing.length}건 · 낙찰 ${wins.length}건`;
+}
+
+// ── 초기 실행 ──
+updateHeader();
+renderList();
+</script>
+</body>
+</html>
