@@ -6,7 +6,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="입찰관리">
-<link rel="manifest" href="/tvlab/manifest_bid.json">
 <title>티비랩 입찰관리</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -272,21 +271,90 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <div id="statsContainer"></div>
   </div>
 
+  <!-- 탭 4: K-apt -->
+  <div class="tab-pane" id="pane-kapt">
+    <div class="card">
+      <div class="card-title">🏢 K-apt 아파트 공고</div>
+      <p style="font-size:12px;color:var(--dim);margin-bottom:12px;line-height:1.7">
+        공동주택관리정보시스템(K-apt)에서 아파트 전기공사 입찰 공고를 확인하세요.<br>
+        소규모 단지는 경쟁이 거의 없어요!
+      </p>
+      <a href="https://www.k-apt.go.kr/bid/bidList.do" target="_blank" style="display:block">
+        <button class="btn-gold" style="margin-bottom:10px">🔍 K-apt 공고 바로가기</button>
+      </a>
+      <div style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;color:var(--dim);line-height:1.8">
+        <strong style="color:var(--gold)">검색 팁</strong><br>
+        공사종류 → <strong style="color:var(--text)">전기공사</strong> 선택<br>
+        지역 → <strong style="color:var(--text)">경기도</strong> 선택<br>
+        금액 작은 공고일수록 경쟁 적어요 😊
+      </div>
+    </div>
+
+    <!-- 단가 참고표 -->
+    <div class="card">
+      <div class="card-title">💰 아파트 전기공사 단가 참고</div>
+      <div class="stat-row"><span class="stat-key">LED 교체 (개당)</span><span class="stat-val y">2~5만원</span></div>
+      <div class="stat-row"><span class="stat-key">콘센트/스위치 교체</span><span class="stat-val y">2~3만원</span></div>
+      <div class="stat-row"><span class="stat-key">비상등 교체</span><span class="stat-val y">5~10만원</span></div>
+      <div class="stat-row"><span class="stat-key">전기 정기점검 (연간)</span><span class="stat-val y">50~150만원</span></div>
+      <div class="stat-row"><span class="stat-key">공용부 조명 교체공사</span><span class="stat-val y">100~500만원</span></div>
+      <div class="stat-row"><span class="stat-key">분전반 점검</span><span class="stat-val y">10~30만원</span></div>
+      <p style="font-size:10px;color:var(--muted);margin-top:10px">※ 낙찰 결과 기록할수록 실제 단가 감이 쌓여요</p>
+    </div>
+
+    <!-- K-apt 공고 기록 -->
+    <div class="card">
+      <div class="card-title">📝 K-apt 공고 기록</div>
+      <p style="font-size:12px;color:var(--dim);margin-bottom:12px">발견한 공고 저장해두고 관리해요</p>
+
+      <div class="form-group">
+        <div class="form-label">아파트명</div>
+        <input class="form-input plain" id="k_apt" placeholder="예: 운정자이 시그니처">
+      </div>
+      <div class="form-group">
+        <div class="form-label">공사 내용</div>
+        <input class="form-input plain" id="k_work" placeholder="예: 공용부 LED 교체공사">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">예산금액</div>
+          <input class="form-input" id="k_budget" placeholder="예: 3000000">
+        </div>
+        <div class="form-group">
+          <div class="form-label">마감일</div>
+          <input class="form-input plain" type="date" id="k_deadline">
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">메모</div>
+        <input class="form-input plain" id="k_memo" placeholder="세대수, 특이사항 등">
+      </div>
+      <button class="btn-gold" onclick="saveKapt()" style="margin-top:4px">📥 공고 저장</button>
+    </div>
+
+    <!-- 저장된 K-apt 공고 목록 -->
+    <div id="kaptListContainer"></div>
+  </div>
+
 </div>
 
 <!-- 하단 탭 -->
 <div class="bottom-tabs">
   <div class="btab active" onclick="switchTab('list')" id="btab-list">
     <div class="icon">📋</div>
-    <div class="label">입찰 목록</div>
+    <div class="label">나라장터</div>
   </div>
   <div class="btab" onclick="switchTab('new')" id="btab-new">
     <div class="icon">➕</div>
     <div class="label">새 입찰</div>
   </div>
+  <div class="btab" onclick="switchTab('kapt')" id="btab-kapt">
+    <div class="icon">🏢</div>
+    <div class="label">K-apt</div>
+  </div>
   <div class="btab" onclick="switchTab('stats')" id="btab-stats">
     <div class="icon">📈</div>
-    <div class="label">데이터 분석</div>
+    <div class="label">분석</div>
   </div>
 </div>
 
@@ -364,6 +432,86 @@ function switchTab(tab) {
   if (tab === 'list') renderList();
   if (tab === 'stats') renderStats();
   if (tab === 'new') resetNewForm();
+  if (tab === 'kapt') renderKaptList();
+}
+
+// ── K-apt 저장/불러오기 ──
+function loadKapts() { return JSON.parse(localStorage.getItem('tvlab_kapts') || '[]'); }
+function saveKapts(data) { localStorage.setItem('tvlab_kapts', JSON.stringify(data)); }
+
+function saveKapt() {
+  const apt = document.getElementById('k_apt').value.trim();
+  const work = document.getElementById('k_work').value.trim();
+  if (!apt || !work) { alert('아파트명과 공사내용은 필수예요!'); return; }
+
+  const item = {
+    id: Date.now(),
+    apt,
+    work,
+    budget: parseFloat(document.getElementById('k_budget').value.replace(/,/g,'')) || 0,
+    deadline: document.getElementById('k_deadline').value,
+    memo: document.getElementById('k_memo').value.trim(),
+    status: 'found', // found / bid / win / lose
+    createdAt: new Date().toISOString(),
+  };
+
+  const data = loadKapts();
+  data.unshift(item);
+  saveKapts(data);
+
+  // 폼 초기화
+  ['k_apt','k_work','k_budget','k_deadline','k_memo'].forEach(id => document.getElementById(id).value = '');
+  alert('✅ 공고 저장됐어요!');
+  renderKaptList();
+}
+
+function renderKaptList() {
+  const data = loadKapts();
+  const container = document.getElementById('kaptListContainer');
+  if (!container) return;
+
+  if (data.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">🏢</div><p>저장된 K-apt 공고가 없어요.<br>위에서 공고를 저장해보세요!</p></div>`;
+    return;
+  }
+
+  const statusMap = { found:'발견', bid:'입찰함', win:'낙찰🎉', lose:'미낙찰' };
+  const statusColor = { found:'var(--blue)', bid:'var(--yellow)', win:'var(--green)', lose:'var(--red)' };
+
+  let html = `<div class="section-label">저장된 공고 (${data.length}건)</div>`;
+  data.forEach(item => {
+    html += `<div class="history-item" onclick="updateKaptStatus(${item.id})">
+      <div class="history-top">
+        <div class="history-name">${item.apt}<br><span style="font-weight:400;color:var(--dim)">${item.work}</span></div>
+        <div style="font-size:11px;font-weight:700;color:${statusColor[item.status]}">${statusMap[item.status]}</div>
+      </div>
+      <div class="history-nums">
+        ${item.budget ? `<div class="history-num">예산 <span>${Math.round(item.budget).toLocaleString()}원</span></div>` : ''}
+        ${item.deadline ? `<div class="history-num">마감 <span>${item.deadline}</span></div>` : ''}
+        ${item.memo ? `<div class="history-num">📝 <span>${item.memo}</span></div>` : ''}
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px">탭해서 상태 변경</div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function updateKaptStatus(id) {
+  const data = loadKapts();
+  const item = data.find(x => x.id === id);
+  if (!item) return;
+
+  const statusFlow = { found:'bid', bid:'win', win:'lose', lose:'found' };
+  const statusMap = { found:'발견', bid:'입찰함', win:'낙찰🎉', lose:'미낙찰' };
+  const next = statusFlow[item.status];
+
+  if (confirm(`"${item.apt}" 상태를 "${statusMap[next]}"(으)로 변경할까요?`)) {
+    item.status = next;
+    saveKapts(data);
+    renderKaptList();
+    if (next === 'win') setTimeout(() => alert('🎉 K-apt 낙찰 축하해요!!!'), 200);
+  }
 }
 
 // ── 새 입찰 폼 리셋 ──
