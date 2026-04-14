@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <!-- 배경 -->
+  <rect width="192" height="192" rx="40" fill="#0d1117"/>
+
+  <!-- 건물 본체 -->
+  <rect x="36" y="90" width="120" height="72" fill="#1c2128" stroke="#e6a817" stroke-width="2"/>
+
+  <!-- 지붕/삼각형 -->
+  <polygon points="96,30 22,90 170,90" fill="#e6a817"/>
+
+  <!-- 기둥들 -->
+  <rect x="52" y="100" width="12" height="62" fill="#0d1117" opacity="0.5"/>
+  <rect x="76" y="100" width="12" height="62" fill="#0d1117" opacity="0.5"/>
+  <rect x="104" y="100" width="12" height="62" fill="#0d1117" opacity="0.5"/>
+  <rect x="128" y="100" width="12" height="62" fill="#0d1117" opacity="0.5"/>
+
+  <!-- 문 -->
+  <rect x="82" y="130" width="28" height="32" rx="14" fill="#e6a817" opacity="0.9"/>
+
+  <!-- 계단 -->
+  <rect x="28" y="162" width="136" height="6" rx="2" fill="#e6a817" opacity="0.6"/>
+  <rect x="20" y="168" width="152" height="6" rx="2" fill="#e6a817" opacity="0.4"/>
+
+  <!-- 상단 텍스트 느낌 장식 -->
+  <rect x="70" y="46" width="52" height="4" rx="2" fill="#0d1117" opacity="0.4"/>
+</svg>
