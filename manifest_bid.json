@@ -6,7 +6,7 @@
   "background_color": "#0d1117",
   "theme_color": "#0d1117",
   "icons": [{
-    "src": "/tvlab/icon.svg",
+    "src": "/tvlab/icon_bid.svg",
     "sizes": "any",
     "type": "image/svg+xml"
   }]
