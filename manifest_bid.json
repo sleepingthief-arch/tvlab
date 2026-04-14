@@ -1,0 +1,13 @@
+{
+  "name": "티비랩 입찰관리",
+  "short_name": "입찰관리",
+  "start_url": "/tvlab/tvlab_bid.html",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "icons": [{
+    "src": "/tvlab/icon.svg",
+    "sizes": "any",
+    "type": "image/svg+xml"
+  }]
+}
