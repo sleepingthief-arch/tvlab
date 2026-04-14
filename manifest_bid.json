@@ -2,6 +2,7 @@
   "name": "티비랩 입찰관리",
   "short_name": "입찰관리",
   "start_url": "/tvlab/tvlab_bid.html",
+  "scope": "/tvlab/tvlab_bid.html",
   "display": "standalone",
   "background_color": "#0d1117",
   "theme_color": "#0d1117",
