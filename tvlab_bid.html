@@ -271,7 +271,25 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <div id="statsContainer"></div>
   </div>
 
-  <!-- 탭 4: K-apt -->
+  <!-- 탭 4: 엑셀 업로드 -->
+  <div class="tab-pane" id="pane-excel">
+    <div class="card">
+      <div class="card-title">📊 업체 추천 엑셀 업로드</div>
+      <p style="font-size:12px;color:var(--dim);margin-bottom:12px;line-height:1.7">
+        매일 받는 투찰마감건 엑셀 파일을 올리면<br>공고 목록이 자동으로 불러와져요!
+      </p>
+      <div class="pdf-zone" id="excelZone">
+        <input type="file" accept=".xlsx,.xls" id="excelInput" onchange="handleExcel(this.files[0])">
+        <div class="pdf-zone-icon">📊</div>
+        <div class="pdf-zone-text">엑셀 파일 업로드</div>
+        <div class="pdf-zone-sub">251217_투찰마감건.xlsx 형식</div>
+      </div>
+      <div class="status-msg" id="excelStatus"></div>
+    </div>
+    <div id="excelListContainer"></div>
+  </div>
+
+  <!-- 탭 5: K-apt -->
   <div class="tab-pane" id="pane-kapt">
     <div class="card">
       <div class="card-title">🏢 K-apt 아파트 공고</div>
@@ -342,11 +360,15 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 <div class="bottom-tabs">
   <div class="btab active" onclick="switchTab('list')" id="btab-list">
     <div class="icon">📋</div>
-    <div class="label">나라장터</div>
+    <div class="label">목록</div>
   </div>
   <div class="btab" onclick="switchTab('new')" id="btab-new">
     <div class="icon">➕</div>
     <div class="label">새 입찰</div>
+  </div>
+  <div class="btab" onclick="switchTab('excel')" id="btab-excel">
+    <div class="icon">📊</div>
+    <div class="label">엑셀</div>
   </div>
   <div class="btab" onclick="switchTab('kapt')" id="btab-kapt">
     <div class="icon">🏢</div>
@@ -433,6 +455,218 @@ function switchTab(tab) {
   if (tab === 'stats') renderStats();
   if (tab === 'new') resetNewForm();
   if (tab === 'kapt') renderKaptList();
+  if (tab === 'excel') renderExcelList();
+}
+
+// ── 엑셀 처리 ──
+async function handleExcel(file) {
+  if (!file) return;
+  const st = document.getElementById('excelStatus');
+  st.className = 'status-msg loading';
+  st.innerHTML = '⏳ 엑셀 분석 중...';
+
+  try {
+    // SheetJS로 엑셀 읽기
+    const buf = await file.arrayBuffer();
+    const arr = new Uint8Array(buf);
+
+    // SheetJS 동적 로드
+    if (!window.XLSX) {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+    }
+
+    const wb = XLSX.read(arr, { type: 'array', cellDates: true });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+    // 마감일 추출 (3행 1번 컬럼)
+    let deadline = '';
+    for (let r of rows.slice(0,3)) {
+      for (let cell of r) {
+        if (cell instanceof Date) {
+          deadline = cell.toISOString().split('T')[0];
+          break;
+        }
+        if (typeof cell === 'string' && cell.match(/202\d/)) {
+          const m = cell.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+          if (m) deadline = `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+        }
+      }
+      if (deadline) break;
+    }
+
+    // 데이터 행 파싱 (4행부터)
+    const items = [];
+    for (let i = 3; i < rows.length; i++) {
+      const row = rows[i];
+      const no = row[1];
+      const name = row[2];
+      const issuer = row[3];
+      const amount = parseFloat(row[4]) || 0;
+      const rate = parseFloat(row[5]) || 0;
+      const memo = row[6] || '';
+
+      if (!name || name === '공사명') continue;
+
+      items.push({
+        id: Date.now() + i,
+        no: String(no || ''),
+        name: String(name),
+        issuer: String(issuer || ''),
+        amount,
+        recRate: rate,
+        recBid: rate > 0 ? Math.round(amount * (rate/100)) : amount,
+        deadline,
+        memo: String(memo),
+        status: 'found',
+        source: 'excel',
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    if (items.length === 0) {
+      st.className = 'status-msg err';
+      st.innerHTML = '❌ 공고를 찾을 수 없어요. 파일 형식을 확인해주세요.';
+      return;
+    }
+
+    // 기존 엑셀 공고 저장
+    const saved = loadExcelBids();
+    // 중복 제거 (공고번호 기준)
+    const existingNos = new Set(saved.map(x => x.no));
+    const newItems = items.filter(x => !existingNos.has(x.no));
+    saveExcelBids([...newItems, ...saved]);
+
+    st.className = 'status-msg ok';
+    st.innerHTML = `✅ ${items.length}건 불러옴 · 신규 ${newItems.length}건 추가됨 (마감: ${deadline || '미확인'})`;
+    renderExcelList();
+
+  } catch(e) {
+    st.className = 'status-msg err';
+    st.innerHTML = '❌ 파일 읽기 실패: ' + e.message;
+  }
+}
+
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+function loadExcelBids() { return JSON.parse(localStorage.getItem('tvlab_excel') || '[]'); }
+function saveExcelBids(data) { localStorage.setItem('tvlab_excel', JSON.stringify(data)); }
+
+function renderExcelList() {
+  const data = loadExcelBids();
+  const container = document.getElementById('excelListContainer');
+  if (!container) return;
+
+  if (data.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">📊</div><p>엑셀 파일을 올리면<br>공고 목록이 여기에 나타나요!</p></div>`;
+    return;
+  }
+
+  // 날짜별 그룹핑
+  const groups = {};
+  data.forEach(item => {
+    const key = item.deadline || '날짜미정';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(item);
+  });
+
+  const statusMap = { found:'대기', bid:'입찰함', win:'낙찰🎉', lose:'미낙찰' };
+  const statusColor = { found:'var(--dim)', bid:'var(--yellow)', win:'var(--green)', lose:'var(--red)' };
+
+  let html = '';
+  Object.keys(groups).sort().reverse().forEach(date => {
+    const items = groups[date];
+    const bidCount = items.filter(x => x.status !== 'found').length;
+    html += `<div class="section-label">마감 ${date} (${items.length}건${bidCount>0?` · ${bidCount}건 처리됨`:''})</div>`;
+
+    items.forEach(item => {
+      const rateStr = item.recRate ? `${item.recRate.toFixed(4)}%` : '—';
+      const amountStr = item.amount ? Math.round(item.amount).toLocaleString() + '원' : '—';
+      const recStr = item.recBid ? Math.round(item.recBid).toLocaleString() + '원' : '—';
+
+      html += `<div class="history-item">
+        <div class="history-top">
+          <div class="history-name" style="font-size:12px">${item.name.substring(0,35)}</div>
+          <div style="font-size:10px;font-weight:700;color:${statusColor[item.status]}">${statusMap[item.status]||'대기'}</div>
+        </div>
+        <div class="history-nums" style="margin-bottom:6px">
+          <div class="history-num">${item.issuer.substring(0,15)}</div>
+          <div class="history-num">기초금액 <span>${amountStr}</span></div>
+        </div>
+        <div style="background:rgba(230,168,23,0.08);border-radius:6px;padding:8px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:11px;color:var(--dim)">추천 투찰가 <span style="color:var(--gold);font-family:'IBM Plex Mono',monospace;font-weight:600">${recStr}</span> <span style="font-size:10px">(${rateStr})</span></div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button onclick="registerFromExcel(${item.id})" style="flex:2;background:var(--gold);color:#000;border:none;border-radius:6px;padding:7px;font-size:12px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer">📥 입찰 등록</button>
+          <button onclick="skipExcel(${item.id})" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:7px;font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer">건너뜀</button>
+        </div>
+      </div>`;
+    });
+  });
+
+  // 전체 삭제 버튼
+  html += `<button onclick="clearExcel()" style="width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-top:8px">🗑️ 전체 삭제</button>`;
+
+  container.innerHTML = html;
+}
+
+function registerFromExcel(id) {
+  const data = loadExcelBids();
+  const item = data.find(x => x.id === id);
+  if (!item) return;
+
+  // 나라장터 입찰 목록에 등록
+  const bids = loadBids();
+  const already = bids.find(b => b.name === item.name && b.deadline === item.deadline);
+  if (already) { alert('이미 등록된 공고예요!'); return; }
+
+  const bid = {
+    id: Date.now(),
+    name: item.name,
+    issuer: item.issuer,
+    deadline: item.deadline,
+    opendate: '',
+    base: item.amount,
+    rate: item.recRate || 0,
+    pure: 0,
+    myBid: item.recBid,
+    recBid: item.recBid,
+    status: 'ongoing',
+    source: 'excel',
+    createdAt: new Date().toISOString(),
+  };
+  bids.unshift(bid);
+  saveBids(bids);
+
+  // 엑셀 목록 상태 업데이트
+  const idx = data.findIndex(x => x.id === id);
+  data[idx].status = 'bid';
+  saveExcelBids(data);
+
+  updateHeader();
+  renderExcelList();
+  alert(`✅ "${item.name.substring(0,20)}..." 입찰 등록됐어요!\n투찰가: ${Math.round(item.recBid).toLocaleString()}원`);
+}
+
+function skipExcel(id) {
+  const data = loadExcelBids();
+  const idx = data.findIndex(x => x.id === id);
+  if (idx === -1) return;
+  data[idx].status = 'lose';
+  saveExcelBids(data);
+  renderExcelList();
+}
+
+function clearExcel() {
+  if (!confirm('엑셀 공고 목록을 전체 삭제할까요?')) return;
+  localStorage.removeItem('tvlab_excel');
+  renderExcelList();
 }
 
 // ── K-apt 저장/불러오기 ──
