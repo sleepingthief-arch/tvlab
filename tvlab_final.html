@@ -391,7 +391,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/15 11:23</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/15 12:43</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -1642,7 +1642,7 @@ async function parseExpenseImage() {
           role: 'user',
           content: [
             { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: expenseImgBase64 } },
-            { type: 'text', text: '이 전표/영수증의 최종 합계 금액(총액)만 숫자로만 반환해. 예: 1389500 (쉼표, 원, 공백 없이 숫자만). 못 읽으면 0만 반환.' }
+            { type: 'text', text: '이 전표 이미지의 우측 상단에 있는 금액(예: ₩1,389,500 형식)을 읽어서 숫자만 반환해. 쉼표/원/₩/공백 모두 제거하고 숫자만. 예: 1389500. 우측 상단에 없으면 하단 합계란에서 찾아. 절대 숫자 외 다른 텍스트 없이 숫자만 반환.' }
           ]
         }]
       })
