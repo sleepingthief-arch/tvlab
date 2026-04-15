@@ -391,7 +391,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/13 01:23</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/15 11:23</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -2648,11 +2648,16 @@ function calCell(ds, day, other, isToday, isSel) {
   const moreHtml = more > 0 ? `<div class="cal-more">+${more}</div>` : '';
   const holiday = getHoliday(ds);
   const holidayHtml = holiday && !other ? `<div style="font-size:8px;color:#d32f2f;line-height:1.2;overflow:hidden;white-space:nowrap;text-overflow:clip;">${holiday}</div>` : '';
-  return `<div class="${cls}" onclick="calClick('${ds}')">
+  // 그날 일정이 있고, 전부 입금완료(paid)인 경우 체크 표시
+  const hasJobs = allJ.length > 0 && !other;
+  const allPaid = hasJobs && allJ.every(j => j.status === 'paid');
+  const paidCheckHtml = allPaid ? `<div style="position:absolute;top:2px;right:3px;font-size:11px;line-height:1;">✅</div>` : '';
+  return `<div class="${cls}" onclick="calClick('${ds}')" style="position:relative;">
     <div class="cal-dn">${day}</div>
     ${holidayHtml}
     <div class="cal-chips">${chips}</div>
     ${moreHtml}
+    ${paidCheckHtml}
   </div>`;
 }
 
@@ -3314,6 +3319,8 @@ function doSearch(q) {
     });
   }
   res.style.display = 'block';
+  // 검색 결과가 보이도록 맨 위로 스크롤
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   document.getElementById('searchHd').textContent = `검색 결과 ${results.length}건`;
   if (!results.length) { document.getElementById('searchList').innerHTML = '<div class="empty" style="padding:20px"><div class="empty-icon">🔍</div>결과가 없어요</div>'; return; }
   document.getElementById('searchList').innerHTML = results.map(r => {
