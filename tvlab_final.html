@@ -391,7 +391,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/16 20:47</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/16 21:38</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -2421,7 +2421,7 @@ function cardHTML(j) {
           ${j.time ? `<span style="font-size:11px;color:var(--text2)">🕐 ${j.time}</span>` : ''}
           <span class="jstatus ${statusCls}" style="margin:0;padding:2px 6px">${statusIcon}</span>
           <span class="jcard-mini-dong" onclick="event.stopPropagation()">
-            ${j.dong || ''}${j.phone ? '<span style="font-size:11.5px;color:var(--text2);margin-left:5px;">📞 '+j.phone.replace(/^(\d{3})(\d{3,4})(\d{4})$/,'$1-$2-$3')+'</span>' : ''}
+            ${j.dong || ''}${j.phone ? '<span style="font-size:11.5px;color:var(--text2);margin-left:5px;user-select:none;-webkit-user-select:none;" onclick="event.stopPropagation();toggleCard(\'' + j.id + '\')">📞 '+j.phone.replace(/^(\d{3})(\d{3,4})(\d{4})$/,'$1-$2-$3')+'</span>' : ''}
           </span>
         </div>
       </div>
