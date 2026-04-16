@@ -391,7 +391,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/16 20:39</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v04/16 20:47</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -4297,6 +4297,13 @@ function resetSettings() {
 // 초기화
 // ════════════════════════════════════════════
 function init() {
+  // 버전 체크 - 구버전이면 로그인 초기화 (모두 일반뷰로 시작)
+  const FORCE_LOGOUT_VER = 'v20260417'; // 이 버전 이후 첫 실행 시 강제 초기화
+  if (localStorage.getItem('tvlab_ver') !== FORCE_LOGOUT_VER) {
+    localStorage.removeItem('tvlab_boss');
+    localStorage.setItem('tvlab_ver', FORCE_LOGOUT_VER);
+  }
+
   // 자동 로그인
   if (localStorage.getItem('tvlab_boss') === 'true') {
     isBoss = true;
