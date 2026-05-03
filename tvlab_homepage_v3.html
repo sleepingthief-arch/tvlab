@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>티비랩 | TV 벽걸이 시공 전문</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #fafaf8;
+    --cream: #f5f3ef;
+    --gold: #c9a96e;
+    --gold-light: #e8d5b0;
+    --gray: #6b6b6b;
+    --gray-light: #e8e6e1;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: var(--white); color: var(--black); overflow-x: hidden; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 20px 48px; display: flex; justify-content: space-between; align-items: center;
+    background: rgba(10,10,10,0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  }
+  .nav-logo { font-family: 'Noto Serif KR', serif; font-size: 22px; font-weight: 600; color: var(--white); letter-spacing: 0.1em; text-decoration: none; }
+  .nav-logo span { color: var(--gold); }
+  .nav-cta { background: var(--gold); color: var(--black); padding: 10px 24px; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-decoration: none; border-radius: 2px; transition: background 0.2s; }
+  .nav-cta:hover { background: var(--gold-light); }
+
+  /* ✅ HERO 배경: 사진 대신 고급진 다크+골드 CSS 그라디언트 */
+  .hero { height: 100vh; min-height: 600px; position: relative; display: flex; align-items: flex-end; overflow: hidden; }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 65% 35%, rgba(201,169,110,0.20) 0%, transparent 55%),
+      radial-gradient(ellipse at 15% 75%, rgba(201,169,110,0.09) 0%, transparent 45%),
+      linear-gradient(145deg, #0f0d0a 0%, #1c160e 30%, #100e0b 60%, #070605 100%);
+  }
+  /* 노이즈 텍스처 */
+  .hero-bg::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    opacity: 0.45;
+  }
+  /* 상단 골드 라인 */
+  .hero-bg::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--gold) 25%, rgba(232,213,176,0.8) 50%, var(--gold) 75%, transparent 100%);
+    opacity: 0.5;
+  }
+  @keyframes heroZoom { from { transform: scale(1.05); } to { transform: scale(1.0); } }
+  .hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(7,6,5,0.88) 0%, rgba(7,6,5,0.3) 45%, transparent 75%);
+  }
+  /* 우측 골드 세로선 장식 */
+  .hero-deco {
+    position: absolute; right: 8%; top: 50%; transform: translateY(-50%);
+    width: 1px; height: 180px;
+    background: linear-gradient(to bottom, transparent 0%, rgba(201,169,110,0.5) 40%, rgba(201,169,110,0.5) 60%, transparent 100%);
+  }
+  .hero-deco::before {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 12px 3px rgba(201,169,110,0.5);
+  }
+  .hero-content { position: relative; z-index: 2; padding: 0 48px 64px; max-width: 800px; animation: heroFadeUp 1s ease-out 0.3s both; }
+  @keyframes heroFadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  .hero-badge { display: inline-block; border: 1px solid var(--gold); color: var(--gold); font-size: 11px; font-weight: 500; letter-spacing: 0.15em; padding: 6px 14px; margin-bottom: 20px; }
+  .hero-title { font-family: 'Noto Serif KR', serif; font-size: clamp(36px, 6vw, 68px); font-weight: 300; color: var(--white); line-height: 1.2; margin-bottom: 16px; }
+  .hero-title strong { font-weight: 700; color: var(--gold); }
+  .hero-sub { font-size: 15px; color: rgba(255,255,255,0.75); font-weight: 300; line-height: 1.6; margin-bottom: 36px; }
+  .hero-actions { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .btn-primary { background: var(--gold); color: var(--black); padding: 16px 36px; font-size: 15px; font-weight: 700; letter-spacing: 0.05em; text-decoration: none; border-radius: 2px; transition: all 0.2s; }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
+  .btn-secondary { color: var(--white); font-size: 14px; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.4); padding-bottom: 2px; transition: border-color 0.2s; }
+  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+  .trust-bar { background: var(--black); padding: 20px 48px; display: flex; gap: 48px; align-items: center; overflow-x: auto; }
+  .trust-item { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+  .trust-icon { color: var(--gold); font-size: 18px; }
+  .trust-text { color: rgba(255,255,255,0.8); font-size: 13px; font-weight: 400; letter-spacing: 0.03em; }
+
+  section { padding: 100px 48px; }
+  .section-label { font-size: 11px; letter-spacing: 0.2em; font-weight: 500; color: var(--gold); text-transform: uppercase; margin-bottom: 16px; }
+  .section-title { font-family: 'Noto Serif KR', serif; font-size: clamp(28px, 4vw, 44px); font-weight: 300; line-height: 1.3; margin-bottom: 16px; }
+  .section-title strong { font-weight: 700; }
+  .section-desc { color: var(--gray); font-size: 15px; line-height: 1.8; max-width: 560px; }
+
+  .why { background: var(--cream); }
+  .why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 64px; align-items: start; }
+  .why-cards { display: flex; flex-direction: column; gap: 24px; }
+  .why-card { background: var(--white); padding: 28px 32px; border-left: 3px solid var(--gold); transition: transform 0.2s, box-shadow 0.2s; }
+  .why-card:hover { transform: translateX(6px); box-shadow: 4px 0 20px rgba(0,0,0,0.06); }
+  .why-card-num { font-size: 11px; color: var(--gold); letter-spacing: 0.15em; font-weight: 500; margin-bottom: 8px; }
+  .why-card-title { font-family: 'Noto Serif KR', serif; font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .why-card-desc { font-size: 13px; color: var(--gray); line-height: 1.7; }
+  .why-image { position: sticky; top: 120px; border-radius: 2px; overflow: hidden; aspect-ratio: 4/5; }
+  .why-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+  .why-image:hover img { transform: scale(1.03); }
+
+  .factory { background: var(--black); padding: 100px 48px; }
+  .factory .section-title { color: var(--white); }
+  .factory .section-desc { color: rgba(255,255,255,0.55); margin-bottom: 56px; }
+  .factory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-top: 48px; }
+  .factory-card { background: #141414; padding: 40px 36px; position: relative; overflow: hidden; transition: background 0.3s; }
+  .factory-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform 0.4s ease; }
+  .factory-card:hover::before { transform: scaleX(1); }
+  .factory-card:hover { background: #1a1a1a; }
+  .factory-card-icon { font-size: 32px; margin-bottom: 20px; }
+  .factory-card-title { font-family: 'Noto Serif KR', serif; font-size: 20px; font-weight: 600; color: var(--white); margin-bottom: 12px; line-height: 1.4; }
+  .factory-card-title .highlight { color: var(--gold); }
+  .factory-card-desc { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.8; }
+  .factory-card-badge { display: inline-block; margin-top: 16px; background: var(--gold); color: var(--black); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; padding: 4px 12px; }
+  .factory-photo-placeholder { background: #1e1e1e; border: 1px dashed rgba(201,169,110,0.3); border-radius: 2px; padding: 48px; text-align: center; color: rgba(255,255,255,0.2); font-size: 13px; margin-top: 48px; line-height: 2; }
+
+  .strength { background: var(--cream); padding: 100px 48px; }
+  .strength-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-top: 48px; }
+  .strength-card { background: var(--white); padding: 40px 36px; border-left: 3px solid transparent; transition: border-color 0.3s, transform 0.2s; }
+  .strength-card:hover { border-color: var(--gold); transform: translateX(4px); }
+  .strength-card-icon { font-size: 32px; margin-bottom: 20px; }
+  .strength-card-title { font-family: 'Noto Serif KR', serif; font-size: 20px; font-weight: 600; margin-bottom: 12px; line-height: 1.4; }
+  .strength-card-title .highlight { color: var(--gold); }
+  .strength-card-desc { font-size: 13px; color: var(--gray); line-height: 1.8; }
+  .strength-card-badge { display: inline-block; margin-top: 16px; background: var(--black); color: var(--white); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; padding: 4px 12px; }
+
+  .branches { background: var(--black); padding: 100px 48px; }
+  .branches .section-title { color: var(--white); }
+  .branches .section-desc { color: rgba(255,255,255,0.55); }
+  .branches-intro { color: rgba(255,255,255,0.55); font-size: 15px; line-height: 1.8; max-width: 600px; margin-bottom: 56px; }
+  .branches-intro strong { color: var(--gold); }
+  .branches-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin-top: 48px; }
+  .branch-card { background: #141414; padding: 28px 24px; transition: background 0.2s; position: relative; }
+  .branch-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform 0.3s; }
+  .branch-card:hover::after { transform: scaleX(1); }
+  .branch-card:hover { background: #1a1a1a; }
+  .branch-region { font-size: 11px; color: var(--gold); letter-spacing: 0.15em; font-weight: 500; margin-bottom: 10px; }
+  .branch-name { font-family: 'Noto Serif KR', serif; font-size: 17px; font-weight: 600; color: var(--white); margin-bottom: 8px; }
+  .branch-desc { font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.6; }
+  .branch-hq { border: 1px solid rgba(201,169,110,0.4); }
+  .branches-franchise { margin-top: 56px; padding: 40px; background: #141414; border-left: 3px solid var(--gold); }
+  .branches-franchise-title { font-family: 'Noto Serif KR', serif; font-size: 20px; font-weight: 600; color: var(--white); margin-bottom: 12px; }
+  .branches-franchise-desc { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.8; margin-bottom: 20px; }
+  .branches-franchise a { color: var(--gold); font-size: 14px; text-decoration: none; border-bottom: 1px solid rgba(201,169,110,0.4); padding-bottom: 2px; }
+
+  /* ✅ 시공사례 갤러리: 첫 두 사진 세로 잘림 해결 */
+  .gallery { background: #111; padding: 100px 48px; }
+  .gallery .section-title { color: var(--white); }
+  .gallery .section-desc { color: rgba(255,255,255,0.5); }
+  .gallery-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: auto auto; gap: 8px; margin-top: 48px; }
+  .gallery-item { overflow: hidden; cursor: pointer; position: relative; }
+  /* 모든 이미지 기본: 가로형 4/3 비율 */
+  .gallery-item img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center center;  /* ✅ 세로 사진도 중앙 기준으로 표시 */
+    display: block;
+    transition: transform 0.5s ease;
+    aspect-ratio: 4/3;
+  }
+  /* 첫번째 큰 이미지: 세로로 길게 */
+  .gallery-item:first-child { grid-row: 1 / 3; }
+  .gallery-item:first-child img { aspect-ratio: unset; height: 100%; min-height: 400px; }
+  .gallery-item:hover img { transform: scale(1.05); }
+  .gallery-item-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0); transition: background 0.3s; }
+  .gallery-item:hover .gallery-item-overlay { background: rgba(0,0,0,0.3); }
+  .gallery-blog-link { display: block; margin-top: 32px; text-align: center; }
+  .gallery-blog-link a { display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.6); font-size: 14px; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 4px; letter-spacing: 0.05em; transition: color 0.2s, border-color 0.2s; }
+  .gallery-blog-link a:hover { color: var(--gold); border-color: var(--gold); }
+
+  .services { background: var(--white); }
+  .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 48px; border: 2px solid var(--gray-light); }
+  .service-card { padding: 36px 28px; border: 1px solid var(--gray-light); transition: background 0.2s; }
+  .service-card:hover { background: var(--cream); }
+  .service-icon { font-size: 28px; margin-bottom: 16px; }
+  .service-name { font-family: 'Noto Serif KR', serif; font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .service-desc { font-size: 13px; color: var(--gray); line-height: 1.7; }
+
+  .stats { background: var(--gold); padding: 72px 48px; display: grid; grid-template-columns: repeat(4, 1fr); }
+  .stat-item { text-align: center; padding: 0 24px; border-right: 1px solid rgba(0,0,0,0.15); }
+  .stat-item:last-child { border-right: none; }
+  .stat-num { font-family: 'Noto Serif KR', serif; font-size: clamp(36px, 5vw, 56px); font-weight: 700; color: var(--black); line-height: 1; margin-bottom: 8px; }
+  .stat-label { font-size: 13px; color: rgba(0,0,0,0.65); font-weight: 500; letter-spacing: 0.05em; }
+
+  .cta { background: var(--black); padding: 120px 48px; text-align: center; }
+  .cta .section-title { color: var(--white); margin-bottom: 12px; }
+  .cta .section-desc { color: rgba(255,255,255,0.5); margin: 0 auto 48px; text-align: center; }
+  .cta-phone { font-family: 'Noto Serif KR', serif; font-size: clamp(40px, 8vw, 80px); font-weight: 700; color: var(--gold); letter-spacing: 0.05em; display: block; margin-bottom: 32px; text-decoration: none; transition: opacity 0.2s; }
+  .cta-phone:hover { opacity: 0.8; }
+  .cta-sub { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 48px; letter-spacing: 0.05em; }
+  .cta-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .btn-kakao { background: #FEE500; color: #000; padding: 16px 40px; font-size: 15px; font-weight: 700; text-decoration: none; border-radius: 2px; display: flex; align-items: center; gap: 8px; transition: opacity 0.2s; }
+  .btn-kakao:hover { opacity: 0.85; }
+
+  footer { background: var(--black); border-top: 1px solid rgba(255,255,255,0.08); padding: 40px 48px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+  .footer-logo { font-family: 'Noto Serif KR', serif; font-size: 18px; font-weight: 600; color: var(--white); }
+  .footer-logo span { color: var(--gold); }
+  .footer-info { font-size: 12px; color: rgba(255,255,255,0.35); line-height: 1.8; }
+
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    .hero-content { padding: 0 20px 48px; }
+    .hero-deco { display: none; }
+    section { padding: 72px 20px; }
+    .trust-bar { padding: 16px 20px; gap: 24px; }
+    .why-grid { grid-template-columns: 1fr; gap: 40px; }
+    .why-image { position: static; aspect-ratio: 4/3; }
+    .factory-grid, .strength-grid { grid-template-columns: 1fr; }
+    .branches-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .gallery-grid { grid-template-columns: 1fr 1fr; }
+    .gallery-item:first-child { grid-row: auto; }
+    .services-grid { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: 1fr 1fr; gap: 32px; padding: 48px 20px; }
+    .stat-item { border-right: none; }
+    .cta { padding: 72px 20px; }
+    footer { padding: 32px 20px; flex-direction: column; align-items: flex-start; }
+  }
+
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo">TV<span>LAB</span></a>
+  <a href="tel:18007703" class="nav-cta">📞 1800-7703</a>
+</nav>
+
+<!-- ✅ HERO: 사진 제거, CSS 그라디언트 배경 -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-deco"></div>
+  <div class="hero-content">
+    <div class="hero-badge">발명특허 취득 · 2018년 창업 · 전국 8개 지점</div>
+    <h1 class="hero-title">TV, 이제는<br><strong>인테리어입니다</strong></h1>
+    <p class="hero-sub">무타공 특허 기술로 벽에 구멍 없이 완벽하게.<br>당일 예약, 당일 시공 — 서울·수도권 전지역</p>
+    <div class="hero-actions">
+      <a href="tel:18007703" class="btn-primary">지금 바로 예약 →</a>
+      <a href="#gallery" class="btn-secondary">시공 사례 보기</a>
+    </div>
+  </div>
+</section>
+
+<div class="trust-bar">
+  <div class="trust-item"><span class="trust-icon">🏆</span><span class="trust-text">발명특허 취득</span></div>
+  <div class="trust-item"><span class="trust-icon">👥</span><span class="trust-text">2인 1조 시공</span></div>
+  <div class="trust-item"><span class="trust-icon">⚡</span><span class="trust-text">당일 예약 · 당일 시공</span></div>
+  <div class="trust-item"><span class="trust-icon">📍</span><span class="trust-text">전국 8개 지점</span></div>
+  <div class="trust-item"><span class="trust-icon">🏭</span><span class="trust-text">포천 자체 공장 운영</span></div>
+  <div class="trust-item"><span class="trust-icon">🔒</span><span class="trust-text">배상책임보험 가입</span></div>
+</div>
+
+<section class="why">
+  <div class="section-label">WHY TVLAB</div>
+  <div class="why-grid">
+    <div>
+      <h2 class="section-title">왜 티비랩을<br><strong>선택해야 할까요</strong></h2>
+      <p class="section-desc">2018년부터 8년간 수천 건의 시공 경험. 특허받은 무타공 기술로 벽면 손상 없이 완벽한 시공을 약속합니다.</p>
+      <div class="why-cards" style="margin-top:40px">
+        <div class="why-card reveal">
+          <div class="why-card-num">01</div>
+          <div class="why-card-title">2인 1조 전문 시공팀</div>
+          <div class="why-card-desc">무거운 TV를 혼자 들 필요 없습니다. 2인 1조로 방문해 안전하고 빠르게 시공합니다. 고객님은 그냥 지켜만 보세요.</div>
+        </div>
+        <div class="why-card reveal">
+          <div class="why-card-num">02</div>
+          <div class="why-card-title">벽에 구멍 없는 무타공 특허 기술</div>
+          <div class="why-card-desc">티비랩만의 발명특허 무타공 장비로 98인치까지 상하좌우 회전 가능. 새 아파트 벽면을 완벽하게 보호합니다.</div>
+        </div>
+        <div class="why-card reveal">
+          <div class="why-card-num">03</div>
+          <div class="why-card-title">당일 예약, 당일 시공</div>
+          <div class="why-card-desc">오전에 연락하시면 당일 시공도 가능합니다. 바쁜 입주 일정에 맞춰 빠르게 움직입니다.</div>
+        </div>
+      </div>
+    </div>
+    <div class="why-image reveal">
+      <img src="case1.jpg" alt="티비랩 시공 사례">
+    </div>
+  </div>
+</section>
+
+<section class="factory">
+  <div class="section-label">OUR FACTORY</div>
+  <h2 class="section-title">장비를 <strong>사다 쓰지 않습니다</strong></h2>
+  <p class="section-desc">시공자가 직접 현장에서 느낀 불편함을 해결하기 위해 장비를 직접 개발하고 제작합니다. 포천 공장부지에서 개발·테스트·출고까지 모두 직접 합니다.</p>
+  <div class="factory-grid">
+    <div class="factory-card reveal">
+      <div class="factory-card-icon">🏭</div>
+      <div class="factory-card-title">포천 <span class="highlight">자체 공장</span> 운영</div>
+      <div class="factory-card-desc">공장부지를 직접 매입해 개발·테스트·물류창고까지 한 곳에서 운영합니다. 재고가 안정적이고 대응이 빠릅니다.</div>
+      <span class="factory-card-badge">자체 운영</span>
+    </div>
+    <div class="factory-card reveal">
+      <div class="factory-card-icon">🔧</div>
+      <div class="factory-card-title">시공자가 <span class="highlight">직접 개발 참여</span></div>
+      <div class="factory-card-desc">현장에서 직접 시공하는 사람이 장비 개발에 참여합니다. 실제 시공 환경에서 테스트하고 개선한 장비입니다.</div>
+      <span class="factory-card-badge">개발 참여</span>
+    </div>
+    <div class="factory-card reveal">
+      <div class="factory-card-icon">📐</div>
+      <div class="factory-card-title">1세대부터 현재까지 <span class="highlight">끊임없는 개선</span></div>
+      <div class="factory-card-desc">수많은 프로토타입을 거쳐 지금의 장비가 완성됐습니다. 현장 경험이 쌓일수록 장비도 진화합니다.</div>
+      <span class="factory-card-badge">지속 개선</span>
+    </div>
+    <div class="factory-card reveal">
+      <div class="factory-card-icon">🏅</div>
+      <div class="factory-card-title">발명특허 · 디자인권 <span class="highlight">취득 완료</span></div>
+      <div class="factory-card-desc">직접 개발한 장비로 발명특허와 디자인권을 취득했습니다. 시중에 파는 제품이 아닌, 티비랩만의 기술입니다.</div>
+      <span class="factory-card-badge">특허 보유</span>
+    </div>
+  </div>
+  <div class="factory-photo-placeholder reveal">
+    📸 공장 사진 준비 중 — 곧 업데이트됩니다
+  </div>
+</section>
+
+<section class="strength">
+  <div class="section-label">OUR STRENGTH</div>
+  <h2 class="section-title">타 업체가<br><strong>못 하는 것들</strong></h2>
+  <p class="section-desc">일반 무타공 업체와 티비랩이 다른 이유입니다.</p>
+  <div class="strength-grid">
+    <div class="strength-card reveal">
+      <div class="strength-card-icon">🔌</div>
+      <!-- ✅ 콘센트 증설무타공 → 콘센트 증설시공 -->
+      <div class="strength-card-title">콘센트 없어도<br><span class="highlight">증설시공 가능</span></div>
+      <div class="strength-card-desc">일반 무타공은 아트월 중앙 콘센트가 있어야만 시공 가능합니다. 티비랩은 콘센트가 없는 곳에 새로 증설하고 무타공까지 한 번에 해결합니다. 콘크리트·가벽 모두 가능.</div>
+      <span class="strength-card-badge">업계 최초</span>
+    </div>
+    <div class="strength-card reveal">
+      <div class="strength-card-icon">🧱</div>
+      <div class="strength-card-title">가벽 증설무타공<br><span class="highlight">국내 유일</span></div>
+      <div class="strength-card-desc">가벽에 콘센트를 증설하고 무타공 시공까지 — 전국에 할 수 있는 업체가 거의 없습니다. 운정자이처럼 콘센트 위치가 특수한 아파트도 문제없습니다.</div>
+      <span class="strength-card-badge">국내 유일</span>
+    </div>
+    <div class="strength-card reveal">
+      <div class="strength-card-icon">⚡</div>
+      <div class="strength-card-title">전기공사 면허 보유<br><span class="highlight">합법적 증설</span></div>
+      <div class="strength-card-desc">전기공사 면허 없이 콘센트 증설은 불법입니다. 티비랩은 경기 전기공사면허(06608호) 보유 업체로 모든 공사가 합법적으로 이루어집니다.</div>
+      <span class="strength-card-badge">면허 보유</span>
+    </div>
+    <div class="strength-card reveal">
+      <div class="strength-card-icon">👥</div>
+      <div class="strength-card-title">2인 1조 시공<br><span class="highlight">안전하고 빠르게</span></div>
+      <div class="strength-card-desc">혼자 오는 기사 한 명이 대형 TV를 드는 건 위험합니다. 티비랩은 항상 2인 1조 방문. 고객이 TV를 들 필요가 전혀 없습니다.</div>
+      <span class="strength-card-badge">2인 1조</span>
+    </div>
+  </div>
+</section>
+
+<section class="branches">
+  <div class="section-label">NATIONWIDE</div>
+  <h2 class="section-title" style="color:var(--white)">전국 <strong>8개 지점</strong></h2>
+  <p class="branches-intro">
+    티비랩 본사에서 <strong>직접 기술을 전수받은</strong> 검증된 전문가들이 전국 각지에 있습니다.<br>
+    모든 지점은 본사와 동일한 기술, 동일한 장비로 시공합니다.
+  </p>
+  <div class="branches-grid">
+    <div class="branch-card branch-hq reveal">
+      <div class="branch-region">본사 · HQ</div>
+      <div class="branch-name">경기북부 · 서울</div>
+      <div class="branch-desc">대표 김문성 · 이정호<br>포천 자체 공장 운영</div>
+    </div>
+    <div class="branch-card reveal">
+      <div class="branch-region">BRANCH 02</div>
+      <div class="branch-name">춘천 지점</div>
+      <div class="branch-desc">강원 전지역 커버</div>
+    </div>
+    <div class="branch-card reveal">
+      <div class="branch-region">BRANCH 03</div>
+      <div class="branch-name">인천 지점</div>
+      <div class="branch-desc">인천 전지역 커버</div>
+    </div>
+    <div class="branch-card reveal">
+      <div class="branch-region">BRANCH 04</div>
+      <div class="branch-name">안산 지점</div>
+      <div class="branch-desc">경기 서남부 커버</div>
+    </div>
+    <div class="branch-card reveal">
+      <div class="branch-region">BRANCH 05</div>
+      <div class="branch-name">오산 지점</div>
+      <div class="branch-desc">경기 남부 커버</div>
+    </div>
+    <div class="branch-card reveal">
+      <div class="branch-region">BRANCH 06</div>
+      <div class="branch-name">충남 지점</div>
+      <div class="branch-desc">충청남도 전지역</div>
+    </div>
+    <div class="branch-card reveal">
+      <div class="branch-region">BRANCH 07</div>
+      <div class="branch-name">충북 지점</div>
+      <div class="branch-desc">충청북도 전지역</div>
+    </div>
+    <div class="branch-card reveal">
+      <div class="branch-region">BRANCH 08</div>
+      <div class="branch-name">양산 지점</div>
+      <div class="branch-desc">경남 전지역 커버</div>
+    </div>
+  </div>
+  <div class="branches-franchise reveal">
+    <div class="branches-franchise-title">🤝 기술 가맹 문의</div>
+    <div class="branches-franchise-desc">티비랩의 특허 기술과 장비로 독립을 원하시는 분들의 문의를 받습니다. 본사에서 직접 기술을 전수해드립니다.</div>
+    <a href="tel:18007703">가맹 문의 → 1800-7703</a>
+  </div>
+</section>
+
+<!-- ✅ 시공사례: 모든 이미지 object-position: center center 적용 -->
+<section class="gallery" id="gallery">
+  <div class="section-label">PORTFOLIO</div>
+  <h2 class="section-title" style="color:var(--white)">시공 사례</h2>
+  <p class="section-desc" style="color:rgba(255,255,255,0.5)">직접 방문해 완성한 공간들입니다.</p>
+  <div class="gallery-grid">
+    <div class="gallery-item reveal">
+      <img src="case.jpg" alt="티비랩 시공 사례">
+      <div class="gallery-item-overlay"></div>
+    </div>
+    <div class="gallery-item reveal">
+      <img src="case.jpg" alt="티비랩 시공 사례">
+      <div class="gallery-item-overlay"></div>
+    </div>
+    <div class="gallery-item reveal">
+      <img src="case.jpg" alt="티비랩 시공 사례">
+      <div class="gallery-item-overlay"></div>
+    </div>
+    <div class="gallery-item reveal">
+      <img src="case.jpg" alt="티비랩 시공 사례">
+      <div class="gallery-item-overlay"></div>
+    </div>
+  </div>
+  <div class="gallery-blog-link">
+    <a href="https://blog.naver.com/thethief3" target="_blank">더 많은 시공 사례 보러가기 →</a>
+  </div>
+</section>
+
+<!-- ✅ 서비스: 콘센트 증설무타공 → 콘센트 증설시공 / 사운드바 설치 삭제 -->
+<section class="services">
+  <div class="section-label">SERVICES</div>
+  <h2 class="section-title">제공 서비스</h2>
+  <div class="services-grid">
+    <div class="service-card reveal">
+      <div class="service-icon">📺</div>
+      <div class="service-name">벽걸이 TV 설치</div>
+      <div class="service-desc">무타공 특허 기술로 벽에 구멍 없이 깔끔하게. 98인치까지 가능.</div>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-icon">🔌</div>
+      <div class="service-name">콘센트 증설시공</div>
+      <div class="service-desc">콘센트 없는 자리에도 증설 후 무타공 시공. 콘크리트·가벽 모두 가능.</div>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-icon">🕐</div>
+      <div class="service-name">LED 시계 설치</div>
+      <div class="service-desc">인테리어와 조화로운 LED 디지털 시계 벽면 설치.</div>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-icon">🏠</div>
+      <div class="service-name">스마트홈 구축</div>
+      <div class="service-desc">전동 커튼, 조명, 스마트홈 시스템 통합 시공.</div>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-icon">💡</div>
+      <div class="service-name">조명 시공</div>
+      <div class="service-desc">간접조명, 포인트 조명 등 인테리어 조명 시공.</div>
+    </div>
+  </div>
+</section>
+
+<div class="stats">
+  <div class="stat-item reveal"><div class="stat-num">8년</div><div class="stat-label">2018년 창업</div></div>
+  <div class="stat-item reveal"><div class="stat-num">8개</div><div class="stat-label">전국 지점</div></div>
+  <div class="stat-item reveal"><div class="stat-num">2인</div><div class="stat-label">1조 전문 시공팀</div></div>
+  <div class="stat-item reveal"><div class="stat-num">특허</div><div class="stat-label">자체 개발 장비</div></div>
+</div>
+
+<section class="cta">
+  <div class="section-label">CONTACT</div>
+  <h2 class="section-title">지금 바로<br><strong>예약하세요</strong></h2>
+  <p class="section-desc">오늘 연락하시면 오늘 시공도 가능합니다.<br>전국 8개 지점 — 어디든 갑니다.</p>
+  <a href="tel:18007703" class="cta-phone">1800-7703</a>
+  <p class="cta-sub">평일 · 주말 운영 · 당일 예약 가능</p>
+  <div class="cta-buttons">
+    <a href="tel:18007703" class="btn-primary" style="font-size:16px; padding:18px 48px;">📞 전화로 예약하기</a>
+    <a href="http://pf.kakao.com/_WzGSxj/chat" class="btn-kakao" target="_blank">💬 카카오톡 상담</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">TV<span>LAB</span></div>
+  <div class="footer-info">
+    상호 : T.V lab (티비랩) &nbsp;|&nbsp; 대표 : 김문성, 이정호<br>
+    사업자등록번호 : 557-88-02517 &nbsp;|&nbsp; 전기공사면허 경기 - 06608호<br>
+    대표번호 : 1800-7703
+  </div>
+</footer>
+
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => observer.observe(r));
+</script>
+</body>
+</html>
