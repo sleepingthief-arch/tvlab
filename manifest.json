@@ -1,3 +1,3 @@
-{"name":"TV LAB","short_name":"TV LAB","description":"TV LAB 시공관리","start_url":"./tvlab_final0425.html",
-  "scope": "/tvlab/tvlab_final0425.html",
+{"name":"TV LAB","short_name":"TV LAB","description":"TV LAB 시공관리","start_url":"./tvlab_final.html",
+  "scope": "/tvlab/tvlab_final.html",
   "display":"standalone","background_color":"#1a1a2e","theme_color":"#1c1c1c","orientation":"portrait","icons":[{"src":"./icon.svg","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}]}
