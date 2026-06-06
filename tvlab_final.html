@@ -419,7 +419,7 @@ body.staff .jmemo-edit{color:var(--text);opacity:1;}
       <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;">
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="logo">TV LAB</div>
-          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v05/28 16:48</span>
+          <span style="font-size:9px;color:#ff6b35;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);padding:2px 4px;border-radius:4px;font-weight:700;white-space:nowrap;" id="verTag">v06/06 01:43</span>
         </div>
         <div id="dateWeatherEl" style="display:flex;align-items:center;gap:3px;margin-top:1px;">
           <span id="locationEl" style="font-size:10px;color:var(--text2);"></span>
@@ -3564,16 +3564,51 @@ function renderSalesTab() {
 
   const fromD = new Date(fromVal+'T00:00:00');
   const toD = new Date(toVal+'T23:59:59');
+
+  // Firebase에서 기간 내 날짜 데이터 먼저 로드 후 계산
+  if (db) {
+    const fetches = [];
+    const cur = new Date(fromD);
+    while (cur <= toD) {
+      const ds = cur.toISOString().slice(0,10);
+      fetches.push(
+        db.collection('schedules').doc(ds).get().then(doc => {
+          if (doc.exists) {
+            const key = 'tvl_' + ds;
+            const existing = JSON.parse(localStorage.getItem(key) || '{}');
+            localStorage.setItem(key, JSON.stringify(Object.assign({}, existing, doc.data())));
+          }
+        }).catch(()=>{})
+      );
+      cur.setDate(cur.getDate() + 1);
+    }
+    Promise.all(fetches).then(() => _calcSalesTab(fromVal, toVal));
+    return;
+  }
+  _calcSalesTab(fromVal, toVal);
+}
+
+function _calcSalesTab(fromVal, toVal) {
+  const fromD = new Date(fromVal+'T00:00:00');
+  const toD = new Date(toVal+'T23:59:59');
   const kwEl = document.getElementById('salesKeyword');
   const kw = kwEl ? kwEl.value.trim().toLowerCase() : '';
 
   let totalRev = 0, totalCost = 0, totalMargin = 0, totalCnt = 0;
   const items = [];
 
-  // BASE 순회
-  Object.entries(BASE).forEach(([ds, base]) => {
+  // localStorage 전체 순회 (BASE에 없는 날짜도 포함)
+  const allDates = new Set();
+  Object.keys(localStorage).forEach(k => {
+    if (k.startsWith('tvl_')) allDates.add(k.slice(4));
+  });
+  Object.keys(BASE).forEach(ds => allDates.add(ds));
+
+  // 날짜 순회
+  allDates.forEach(ds => {
     const d = new Date(ds+'T00:00:00');
     if (d < fromD || d > toD) return;
+    const base = BASE[ds] || [];
     const uJ = getJobsForDate(ds);
     base.forEach((s, i) => {
       const sv = uJ['b_'+i] || {};
